@@ -115,6 +115,10 @@ def main() -> int:
         "from .scenario import Scenario\n"
         "from .series import Series\n"
         "from .provenance_tag import ProvenanceTag\n"
+        "\n"
+        "# Re-export the version written by setuptools_scm\n"
+        "from ._version import __version__  # noqa: F401\n"
+        "\n"    
         "__all__ = ['Meta', 'Run', 'Scenario', 'Series', 'ProvenanceTag']\n",
         encoding="utf-8",
     )
