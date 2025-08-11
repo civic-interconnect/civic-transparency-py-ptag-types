@@ -30,10 +30,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - name: Install dev + codegen deps
+      - name: Install codegen + spec only
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[dev,codegen]"
+          pip install datamodel-code-generator "civic-transparency-spec==0.1.1"
 
       # Keep generated models in sync with the published spec
       - name: Regenerate types
@@ -41,6 +41,9 @@ jobs:
 
       - name: Check for uncommitted changes (generated code up-to-date)
         run: git diff --exit-code
+
+      - name: Install dev deps
+        run: pip install -e ".[dev]"
 
       - name: Ruff lint
         run: ruff check .

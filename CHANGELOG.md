@@ -12,6 +12,13 @@ and this project adheres to **[Semantic Versioning](https://semver.org/spec/v2.0
 
 ---
 
+## [0.0.2] - 2025-08-11
+
+### Fixed
+- **CI:** Fixed error in CI action.
+
+---
+
 ## [0.0.1] - 2025-08-11
 
 ### Added
@@ -34,5 +41,6 @@ and this project adheres to **[Semantic Versioning](https://semver.org/spec/v2.0
 - Versions are driven by git tags via `setuptools_scm`. Tag `vX.Y.Z` to release.
 - Docs are deployed per version tag and aliased to **latest**.
 
-[Unreleased]: https://github.com/civic-interconnect/civic-transparency-types/compare/v0.0.1...HEAD  
+[Unreleased]: https://github.com/civic-interconnect/civic-transparency-types/compare/v0.0.2...HEAD  
+[0.0.2]: https://github.com/civic-interconnect/civic-transparency-types/compare/v0.0.1...v0.0.2  
 [0.0.1]: https://github.com/civic-interconnect/civic-transparency-types/releases/tag/v0.0.1
