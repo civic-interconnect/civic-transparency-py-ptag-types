@@ -21,6 +21,32 @@ TARGETS = {
     "provenance_tag.schema.json": ("provenance_tag.py", "ProvenanceTag"),
 }
 
+def _ensure_init_exports(init_path: Path) -> None:
+    required_lines = [
+        "from .meta import Meta",
+        "from .run import Run",
+        "from .scenario import Scenario",
+        "from .series import Series",
+        "from .provenance_tag import ProvenanceTag",
+        "from ._version import __version__  # noqa: F401",
+        "__all__ = ['Meta', 'Run', 'Scenario', 'Series', 'ProvenanceTag']",
+    ]
+
+    existing = init_path.read_text(encoding="utf-8") if init_path.exists() else ""
+    lines = [ln.rstrip() for ln in existing.splitlines() if ln.strip()]
+
+    changed = False
+    for req in required_lines:
+        if not any(ln == req for ln in lines):
+            lines.append(req)
+            changed = True
+
+    new_text = "\n".join(lines) + ("\n" if lines else "")
+    if changed or existing != new_text:
+        init_path.write_text(new_text, encoding="utf-8")
+        print("Updated __init__.py exports")
+    else:
+        print("Keeping existing __init__.py (no changes)")
 
 def _run(cmd: list[str]) -> None:
     print(">", " ".join(cmd))
@@ -109,20 +135,8 @@ def main() -> int:
             _strip_unused_rootmodel(out_path)
 
     # Export friendly names
-    (OUT_DIR / "__init__.py").write_text(
-        "from .meta import Meta\n"
-        "from .run import Run\n"
-        "from .scenario import Scenario\n"
-        "from .series import Series\n"
-        "from .provenance_tag import ProvenanceTag\n"
-        "\n"
-        "# Re-export the version written by setuptools_scm\n"
-        "from ._version import __version__  # noqa: F401\n"
-        "\n"    
-        "__all__ = ['Meta', 'Run', 'Scenario', 'Series', 'ProvenanceTag']\n",
-        encoding="utf-8",
-    )
-    print("Types regenerated successfully.")
+    init_path = OUT_DIR / "__init__.py"
+    _ensure_init_exports(init_path)
     return 0
 
 
