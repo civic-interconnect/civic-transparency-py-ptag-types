@@ -1,0 +1,73 @@
+site_name: Civic Transparency Types
+site_description: Types for the Civic Transparency project
+site_author: Civic Interconnect
+site_url: https://civic-interconnect.github.io/civic-transparency-types/
+repo_url: https://github.com/civic-interconnect/civic-transparency-types
+edit_uri: edit/main/docs/en/
+
+theme:
+  name: material
+  features:
+  - content.footer
+  language: en
+  favicon: img/favicon.png
+  palette:
+    scheme: default
+    primary: indigo
+    accent: indigo
+  features:
+    - navigation.tabs
+    - navigation.top
+    - navigation.expand
+    - navigation.sections
+    - navigation.indexes
+    - navigation.tracking
+    - navigation.tabs.stick
+
+nav:
+  - Home: index.md
+  - Usage: usage.md
+  - API: api.md
+  - Reference:
+      - Meta: reference/meta.md
+      - Provenance Tag: reference/provenance_tag.md
+      - Run: reference/run.md
+      - Scenario: reference/scenario.md
+      - Series: reference/series.md
+  - Spec:
+      - Civic Transparency Spec (website): https://civic-interconnect.github.io/civic-transparency-spec/
+
+docs_dir: docs/en
+
+plugins:
+  - search
+  - include-markdown
+  - minify:
+      minify_html: true
+  - i18n:
+      docs_structure: folder
+      languages:
+        - locale: en
+          default: true
+          name: English
+          build: true
+  - git-revision-date-localized:
+      type: iso_date
+      fallback_to_build_date: true
+      enable_creation_date: false
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            show_source: false
+            show_signature: true
+            group_by_category: true
+            filters: ["!^_"]  # hide private members
+
+markdown_extensions:
+- admonition
+- codehilite
+- pymdownx.snippets
+- pymdownx.tabbed
+- toc

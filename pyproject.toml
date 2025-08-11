@@ -1,0 +1,96 @@
+[build-system]
+requires = ["setuptools>=77", "wheel", "setuptools-scm[toml]>=8"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "civic-transparency-types"
+dynamic = ["version"]
+description = "Typed Python models (Pydantic v2) for the Civic Transparency specification"
+readme = "README.md"
+license = "MIT" 
+license-files = ["LICENSE*"]
+
+requires-python = ">=3.11"
+authors = [{ name = "Civic Interconnect" }]
+keywords = ["civic", "transparency", "jsonschema", "specification", "types"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.11",
+  "Topic :: Software Development :: Libraries",
+]
+
+dependencies = [
+  "pydantic>=2.6",
+]
+
+[project.urls]
+Homepage = "https://github.com/civic-interconnect/civic-transparency-types"
+Repository = "https://github.com/civic-interconnect/civic-transparency-types"
+Documentation = "https://civic-interconnect.github.io/civic-transparency-types/latest/"
+
+[project.optional-dependencies]
+docs = [
+  "mkdocs",
+  "mkdocs-material",
+  "mkdocs-static-i18n",
+  "mkdocs-include-markdown-plugin",
+  "mkdocs-git-revision-date-localized-plugin",
+  "mkdocs-minify-plugin",
+  "mkdocstrings[python]",
+  "mike",
+]
+test = ["pytest", "pytest-cov"]
+lint = ["ruff", "pre-commit"]
+build = ["build"]
+validate = ["jsonschema", "openapi-spec-validator"]
+codegen = [
+  "datamodel-code-generator",
+  "civic-transparency-spec==0.1.1",
+]
+
+dev = [
+  "mkdocs",
+  "mkdocs-material",
+  "mkdocs-static-i18n",
+  "mkdocs-include-markdown-plugin",
+  "mkdocs-git-revision-date-localized-plugin",
+  "mkdocs-minify-plugin",
+  "mkdocstrings[python]",
+  "mike",
+  "pytest",
+  "pytest-cov",
+  "ruff",
+  "pre-commit",
+  "build",
+  "jsonschema",
+  "openapi-spec-validator",
+  "datamodel-code-generator",
+  "civic-transparency-spec==0.1.1",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"src/ci/transparency/types/*.py" = ["F401"]  # generated code; datamodel-code-generator sometimes imports unused names
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"ci.transparency.types" = ["py.typed"]
+
+[tool.setuptools_scm]
+write_to = "src/ci/transparency/types/_version.py"
+version_scheme = "guess-next-dev"
+local_scheme = "no-local-version"
+
+[tool.pytest.ini_options]
+addopts = "-q --cov=ci.transparency.types --cov-branch --cov-report=term-missing --cov-report=xml --cov-fail-under=85"
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.coverage.run]
+source = ["src/ci/transparency/types"]

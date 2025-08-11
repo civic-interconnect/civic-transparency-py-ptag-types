@@ -1,0 +1,57 @@
+# This .gitignore file lists content that does NOT need to be tracked in the project history
+
+# ----------------------------------------
+# macOS system files (always ignore)
+# ----------------------------------------
+.DS_Store
+
+# ----------------------------------------
+# Visual Studio Code (always ignore)
+# ----------------------------------------
+.vscode/
+
+# ----------------------------------------
+# Environment variables and secrets (always ignore)
+# ----------------------------------------
+.env
+.env.*
+
+# ----------------------------------------
+# Python (ignore for all Python projects)
+# ----------------------------------------
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+
+# ----------------------------------------
+# Testing & coverage
+# ----------------------------------------
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+.tox/
+.nox/
+
+# ----------------------------------------
+# Packaging tools
+# ----------------------------------------
+*.manifest
+*.spec
+
+# ----------------------------------------
+# Jupyter Notebook checkpoints
+# ----------------------------------------
+.ipynb_checkpoints/
+
+# ----------------------------------------
+# Local tools & cache
+# ----------------------------------------
+.mypy_cache/
+ruff_cache/
+.cache/

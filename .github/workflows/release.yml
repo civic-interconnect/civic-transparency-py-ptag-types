@@ -1,0 +1,107 @@
+# .github/workflows/release.yml
+name: CT Types Release (PyPI + GH Release + versioned docs)
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write     # GH release + pushing docs
+  id-token: write     # PyPI Trusted Publishing
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout with full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install build & codegen deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev,codegen]"
+
+      - name: Regenerate types
+        run: python scripts/generate_types.py
+
+      - name: Check for uncommitted changes (generated code up-to-date)
+        run: git diff --exit-code
+
+      - name: Run tests
+        run: pytest -q
+
+      - name: Build sdist + wheel
+        run: python -m build
+
+      - name: List artifacts
+        run: |
+          python - << 'PY'
+          import zipfile, glob, os
+          print("Dist files:", os.listdir("dist"))
+          for whl in glob.glob("dist/*.whl"):
+              with zipfile.ZipFile(whl) as z:
+                  names = z.namelist()
+                  print(" -", whl, ":", len(names), "files")
+          PY
+
+      - name: Create GitHub Release + upload artifacts
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          generate_release_notes: true
+          files: |
+            dist/*.whl
+            dist/*.tar.gz
+          draft: false
+          prerelease: false
+          make_latest: true
+
+      - name: Publish to PyPI (Trusted Publishing)
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+  docs:
+    needs: build-and-release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout with full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install docs deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[docs]"
+
+      - name: Configure git for mike
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Build docs (fail fast)
+        run: mkdocs build
+
+      - name: Deploy versioned docs with Mike
+        env:
+          TAG: ${{ github.ref_name }}   # e.g., v0.1.4
+        run: |
+          VERSION="${TAG#v}"
+          mike deploy --push --update-aliases latest "$VERSION"
+          mike set-default --push latest
+
