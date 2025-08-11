@@ -41,15 +41,15 @@ jobs:
       - name: Regenerate types
         run: python scripts/generate_types.py
 
-      # Install test deps and the package (NOT editable) with the pinned version
+      # Install test, validate deps and the package (NOT editable) with the pinned version
       # pip installing the project triggers a PEP 517 build; we pass PRETEND_VERSION
       # so setuptools_scm produces an exact X.Y.Z instead of X.Y.Z.dev0
-      - name: Install test deps & project (non-editable, exact version)
+      - name: Install test, validate deps & project (non-editable, exact version)
         env:
           SETUPTOOLS_SCM_PRETEND_VERSION: ${{ steps.ver.outputs.plain }}
         run: |
           python -m pip install --upgrade pip
-          pip install ".[test]"
+          pip install ".[test, validate]"
 
       - name: Run tests (include any validation and coverage)
         run: pytest -q

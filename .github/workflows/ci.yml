@@ -44,10 +44,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install ".[dev]"
 
-      - name: Ruff format (check only, no auto-fix in CI)
-        run: ruff format --check .
-
-      - name: Ruff lint (check only, no auto-fix in CI)
+      - name: Ruff lint (check only, no format or auto-fix in CI)
         run: ruff check .
 
       - name: Run tests (with any validation and coverage)
@@ -60,13 +57,6 @@ jobs:
       - name: Build HTML coverage and upload
         if: always()
         run: coverage html
-        
-      - name: Upload coverage HTML
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: htmlcov
-          path: htmlcov
 
       - name: Upload coverage XML
         uses: actions/upload-artifact@v4
