@@ -110,11 +110,11 @@ Open: <http://127.0.0.1:8000/>
 
 ```bash
 git add .
-git commit -m "Prep v0.0.2"
+git commit -m "Prep v0.0.3"
 git push origin main
 
-git tag v0.0.2 -m "0.0.2"
-git push origin v0.0.2
+git tag v0.0.3 -m "0.0.3"
+git push origin v0.0.3
 ```
 
 > A GitHub Action will **build**, **publish to PyPI** (Trusted Publishing), **create a GitHub Release** with artifacts, and **deploy versioned docs** with `mike`.  
