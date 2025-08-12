@@ -21,6 +21,7 @@ TARGETS = {
     "provenance_tag.schema.json": ("provenance_tag.py", "ProvenanceTag"),
 }
 
+
 def _ensure_init_exports(init_path: Path) -> None:
     required_lines = [
         "from .meta import Meta",
@@ -47,6 +48,7 @@ def _ensure_init_exports(init_path: Path) -> None:
         print("Updated __init__.py exports")
     else:
         print("Keeping existing __init__.py (no changes)")
+
 
 def _run(cmd: list[str]) -> None:
     print(">", " ".join(cmd))

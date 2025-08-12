@@ -3,74 +3,66 @@ requires = ["setuptools>=77", "wheel", "setuptools-scm[toml]>=8"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "civic-transparency-types"
-dynamic = ["version"]
-description = "Typed Python models (Pydantic v2) for the Civic Transparency specification"
-readme = "README.md"
-license = "MIT" 
-license-files = ["LICENSE*"]
-
-requires-python = ">=3.11"
 authors = [{ name = "Civic Interconnect" }]
-keywords = ["civic", "transparency", "jsonschema", "specification", "types"]
 classifiers = [
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.11",
   "Topic :: Software Development :: Libraries",
 ]
-
 dependencies = [
   "pydantic>=2.6",
 ]
+description = "Typed Python models (Pydantic v2) for the Civic Transparency specification"
+dynamic = ["version"]
+keywords = ["civic", "transparency", "jsonschema", "specification", "types"]
+license = "MIT"
+license-files = ["LICENSE*"]
+name = "civic-transparency-types"
+readme = "README.md"
+requires-python = ">=3.11"
 
 [project.urls]
+Documentation = "https://civic-interconnect.github.io/civic-transparency-types/latest/"
 Homepage = "https://github.com/civic-interconnect/civic-transparency-types"
 Repository = "https://github.com/civic-interconnect/civic-transparency-types"
-Documentation = "https://civic-interconnect.github.io/civic-transparency-types/latest/"
 
 [project.optional-dependencies]
-docs = [
-  "mkdocs",
-  "mkdocs-material",
-  "mkdocs-static-i18n",
-  "mkdocs-include-markdown-plugin",
-  "mkdocs-git-revision-date-localized-plugin",
-  "mkdocs-minify-plugin",
-  "mkdocstrings[python]",
-  "mike",
-]
-test = ["pytest", "pytest-cov"]
-lint = ["ruff", "pre-commit"]
-build = ["build"]
-validate = ["jsonschema", "openapi-spec-validator"]
-codegen = [
-  "datamodel-code-generator",
-  "civic-transparency-spec==0.1.1",
-]
-
-dev = [
-  "mkdocs",
-  "mkdocs-material",
-  "mkdocs-static-i18n",
-  "mkdocs-include-markdown-plugin",
-  "mkdocs-git-revision-date-localized-plugin",
-  "mkdocs-minify-plugin",
-  "mkdocstrings[python]",
-  "mike",
-  "pytest",
-  "pytest-cov",
-  "ruff",
-  "pre-commit",
+dev = [ 
   "build",
-  "jsonschema",
-  "openapi-spec-validator",
-  "datamodel-code-generator",
-  "civic-transparency-spec==0.1.1",
+    "pre-commit",
+    "pytest", 
+    "pytest-cov",
+    "ruff",
+    "mkdocs",
+    "mkdocs-git-revision-date-localized-plugin",
+    "mkdocs-include-markdown-plugin",
+    "mkdocs-material",
+    "mkdocs-minify-plugin",
+    "mkdocs-static-i18n",
+    "mkdocstrings[python]",
+    "mike",
+    "jsonschema", 
+    "openapi-spec-validator",
+    "datamodel-code-generator",
+    "civic-transparency-spec==0.1.6",
 ]
 
-[tool.ruff.lint.per-file-ignores]
-"src/ci/transparency/types/*.py" = ["F401"]  # generated code; datamodel-code-generator sometimes imports unused names
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+
+[tool.coverage.run]
+branch = true
+omit = [
+  "src/ci/transparency/types/_version.py"
+]
+source = ["src/ci/transparency/types"]
+
+[tool.pytest.ini_options]
+addopts = "-q --cov=ci.transparency.types --cov-branch --cov-report=term-missing --cov-report=xml --cov-fail-under=85"
+pythonpath = ["src"]
+testpaths = ["tests"]
 
 [tool.setuptools]
 package-dir = { "" = "src" }
@@ -83,14 +75,9 @@ where = ["src"]
 "ci.transparency.types" = ["py.typed"]
 
 [tool.setuptools_scm]
-write_to = "src/ci/transparency/types/_version.py"
-version_scheme = "guess-next-dev"
 local_scheme = "no-local-version"
+version_scheme = "guess-next-dev"
+write_to = "src/ci/transparency/types/_version.py"
 
-[tool.pytest.ini_options]
-addopts = "-q --cov=ci.transparency.types --cov-branch --cov-report=term-missing --cov-report=xml --cov-fail-under=85"
-testpaths = ["tests"]
-pythonpath = ["src"]
-
-[tool.coverage.run]
-source = ["src/ci/transparency/types"]
+[tool.ruff.lint.per-file-ignores]
+"src/ci/transparency/types/*.py" = ["F401"]

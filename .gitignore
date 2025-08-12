@@ -31,6 +31,9 @@ build/
 # ----------------------------------------
 # Testing & coverage
 # ----------------------------------------
+.coveragerc # Put info in pyproject.toml
+coveragerc # Put info in pyproject.toml
+pytest.ini # Put info in pyproject.toml
 .coverage
 coverage.xml
 htmlcov/
@@ -55,3 +58,4 @@ htmlcov/
 .mypy_cache/
 ruff_cache/
 .cache/
+src/ci/transparency/types/_version.py

@@ -1,0 +1,13 @@
+# project .editorconfig file
+root = true
+
+[*]
+# Unix-style line endings
+end_of_line = lf
+# Add a newline at the end of the file
+insert_final_newline = true
+
+# Use 4-space indentation for Python files
+[*.py]
+indent_style = space
+indent_size = 4

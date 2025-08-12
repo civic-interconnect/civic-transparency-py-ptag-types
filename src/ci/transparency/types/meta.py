@@ -16,39 +16,39 @@ class Window(BaseModel):
     """
 
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
     )
-    start: Annotated[datetime, Field(description='Window start (UTC, ISO 8601).')]
-    end: Annotated[datetime, Field(description='Window end (UTC, ISO 8601).')]
+    start: Annotated[datetime, Field(description="Window start (UTC, ISO 8601).")]
+    end: Annotated[datetime, Field(description="Window end (UTC, ISO 8601).")]
 
 
 class EventKind(Enum):
-    burst = 'burst'
-    synchrony_wave = 'synchrony_wave'
+    burst = "burst"
+    synchrony_wave = "synchrony_wave"
 
 
 class ThreatType(Enum):
-    benign = 'benign'
-    malicious = 'malicious'
-    mixed = 'mixed'
+    benign = "benign"
+    malicious = "malicious"
+    mixed = "mixed"
 
 
 class Event(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
     )
     kind: EventKind
     start: Annotated[
-        Optional[datetime], Field(description='Event start (UTC, ISO 8601).')
+        Optional[datetime], Field(description="Event start (UTC, ISO 8601).")
     ] = None
     end: Annotated[
-        Optional[datetime], Field(description='Event end (UTC, ISO 8601).')
+        Optional[datetime], Field(description="Event end (UTC, ISO 8601).")
     ] = None
     center: Annotated[
-        Optional[datetime], Field(description='Event center/peak (UTC, ISO 8601).')
+        Optional[datetime], Field(description="Event center/peak (UTC, ISO 8601).")
     ] = None
     span_minutes: Annotated[
-        Optional[int], Field(description='Event duration span in minutes.', ge=1)
+        Optional[int], Field(description="Event duration span in minutes.", ge=1)
     ] = None
 
 
@@ -58,22 +58,22 @@ class Meta(BaseModel):
     """
 
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
     )
     topic: Annotated[
         str,
         Field(
-            description='Human-readable topic key (e.g., hashtag) used for this run.'
+            description="Human-readable topic key (e.g., hashtag) used for this run."
         ),
     ]
     window: Window
     notes: Annotated[
-        Optional[str], Field(description='Free-form notes about this run (nullable).')
+        Optional[str], Field(description="Free-form notes about this run (nullable).")
     ] = None
     seed: Annotated[
         int,
         Field(
-            description='PRNG seed used to make the run reproducible (non-negative).',
+            description="PRNG seed used to make the run reproducible (non-negative).",
             ge=0,
         ),
     ]
@@ -81,7 +81,7 @@ class Meta(BaseModel):
         int,
         Field(
             description=(
-                'Count of synthetic or sampled accounts involved in generation.'
+                "Count of synthetic or sampled accounts involved in generation."
             ),
             ge=0,
         ),
@@ -89,38 +89,38 @@ class Meta(BaseModel):
     posts_raw: Annotated[
         int,
         Field(
-            description='Raw post count considered before bucketing/aggregation.', ge=0
+            description="Raw post count considered before bucketing/aggregation.", ge=0
         ),
     ]
     buckets_aggregated: Annotated[
-        int, Field(description='Number of (time × category) buckets aggregated.', ge=0)
+        int, Field(description="Number of (time × category) buckets aggregated.", ge=0)
     ]
     scenario_file: Annotated[
         str,
         Field(
-            description='Path or URI to the scenario definition used for this run.',
-            pattern='^.+\\.(ya?ml)$',
+            description="Path or URI to the scenario definition used for this run.",
+            pattern="^.+\\.(ya?ml)$",
         ),
     ]
     scenario_sha256: Annotated[
         str,
         Field(
-            description='SHA-256 of the scenario file content (hex, lowercase).',
-            pattern='^[a-f0-9]{64}$',
+            description="SHA-256 of the scenario file content (hex, lowercase).",
+            pattern="^[a-f0-9]{64}$",
         ),
     ]
     events: Annotated[
         List[Event],
         Field(
-            description='Detected or injected events that characterize the run window.',
+            description="Detected or injected events that characterize the run window.",
             min_length=1,
         ),
     ]
     threat_type: Annotated[
         Optional[ThreatType],
-        Field(description='Optional qualitative label for the scenario/run.'),
+        Field(description="Optional qualitative label for the scenario/run."),
     ] = None
     threat_notes: Annotated[
         Optional[str],
-        Field(description='Optional notes supporting the threat_type label.'),
+        Field(description="Optional notes supporting the threat_type label."),
     ] = None

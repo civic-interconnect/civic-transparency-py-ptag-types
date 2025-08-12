@@ -7,6 +7,7 @@ from pathlib import Path
 
 DIST = Path("dist")
 
+
 def main() -> int:
     if not DIST.exists():
         print("ERROR: dist/ does not exist")
@@ -46,6 +47,7 @@ def main() -> int:
                 print("    •", o)
 
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

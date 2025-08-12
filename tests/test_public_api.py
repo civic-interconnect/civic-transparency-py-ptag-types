@@ -15,6 +15,6 @@ def test_public_api_surface():
 
 
 def test_version_present_and_string():
-    from ci.transparency.types import __version__ # type: ignore
+    from ci.transparency.types import __version__  # type: ignore
 
     assert isinstance(__version__, str) and __version__

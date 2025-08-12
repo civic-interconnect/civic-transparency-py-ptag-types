@@ -15,7 +15,7 @@ class Interval(Enum):
     Aggregation interval.
     """
 
-    minute = 'minute'
+    minute = "minute"
 
 
 class Probability(RootModel[float]):
@@ -28,34 +28,34 @@ class CoordinationSignals(BaseModel):
     """
 
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
     )
     burst_score: Annotated[
-        float, Field(description='Burstiness indicator (0-1).', ge=0.0, le=1.0)
+        float, Field(description="Burstiness indicator (0-1).", ge=0.0, le=1.0)
     ]
     synchrony_index: Annotated[
-        float, Field(description='Temporal synchrony indicator (0-1).', ge=0.0, le=1.0)
+        float, Field(description="Temporal synchrony indicator (0-1).", ge=0.0, le=1.0)
     ]
     duplication_clusters: Annotated[
         int,
-        Field(description='Count of duplicate/near-duplicate content clusters.', ge=0),
+        Field(description="Count of duplicate/near-duplicate content clusters.", ge=0),
     ]
 
 
 class Point(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
     )
     ts: Annotated[
-        datetime, Field(description='UTC minute boundary for this point (ISO 8601).')
+        datetime, Field(description="UTC minute boundary for this point (ISO 8601).")
     ]
     volume: Annotated[
-        int, Field(description='Total posts observed in this interval.', ge=0)
+        int, Field(description="Total posts observed in this interval.", ge=0)
     ]
     reshare_ratio: Annotated[
         float,
         Field(
-            description='Fraction of posts that are reshares in this interval.',
+            description="Fraction of posts that are reshares in this interval.",
             ge=0.0,
             le=1.0,
         ),
@@ -64,8 +64,8 @@ class Point(BaseModel):
         float,
         Field(
             description=(
-                'Estimated fraction of posts that recycle prior content'
-                ' (hash/duplicate-based).'
+                "Estimated fraction of posts that recycle prior content"
+                " (hash/duplicate-based)."
             ),
             ge=0.0,
             le=1.0,
@@ -75,7 +75,7 @@ class Point(BaseModel):
         Dict[str, Probability],
         Field(
             description=(
-                'Distribution over account-age buckets; values typically sum to ~1.0.'
+                "Distribution over account-age buckets; values typically sum to ~1.0."
             )
         ),
     ]
@@ -83,7 +83,7 @@ class Point(BaseModel):
         Dict[str, Probability],
         Field(
             description=(
-                'Distribution over automation flags; values typically sum to ~1.0.'
+                "Distribution over automation flags; values typically sum to ~1.0."
             )
         ),
     ]
@@ -91,12 +91,12 @@ class Point(BaseModel):
         Dict[str, Probability],
         Field(
             description=(
-                'Distribution over client families; values typically sum to ~1.0.'
+                "Distribution over client families; values typically sum to ~1.0."
             )
         ),
     ]
     coordination_signals: Annotated[
-        CoordinationSignals, Field(description='Per-interval coordination indicators.')
+        CoordinationSignals, Field(description="Per-interval coordination indicators.")
     ]
 
 
@@ -106,22 +106,22 @@ class Series(BaseModel):
     """
 
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
     )
     topic: Annotated[
         str,
         Field(
-            description='Topic key (e.g., hashtag) this series describes.', min_length=1
+            description="Topic key (e.g., hashtag) this series describes.", min_length=1
         ),
     ]
     generated_at: Annotated[
         datetime,
-        Field(description='UTC timestamp when this series was generated (ISO 8601).'),
+        Field(description="UTC timestamp when this series was generated (ISO 8601)."),
     ]
-    interval: Annotated[Interval, Field(description='Aggregation interval.')]
+    interval: Annotated[Interval, Field(description="Aggregation interval.")]
     points: Annotated[
         List[Point],
         Field(
-            description='Time-ordered list of per-interval aggregates.', min_length=1
+            description="Time-ordered list of per-interval aggregates.", min_length=1
         ),
     ]

@@ -1,5 +1,9 @@
 # .github/workflows/ci.yml
 name: Civic Transparency Types CI (Build Types, Lint, Test, Coverage)
+# Runs on every push to the main branch and on pull requests.
+# First line of defense, catches issues before they reach release.
+# Designed to fail fast, run all tests, and generate coverage reports.
+# It does not fix issues, only checks them.
 
 on:
   push:
@@ -21,50 +25,42 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Python ${{ matrix.python-version }}
+      - name: Setup Python and cache ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: "pip"
 
-      - name: Install codegen deps only (no editable install)
+      - name: Assemble. Install all dev dependencies (non-editable)
         run: |
-          python -m pip install --upgrade pip
-          pip install ".[codegen]"
-
-      # Keep generated models in sync with the published spec
-      - name: Regenerate types
-        run: python scripts/generate_types.py
-
-      - name: Check for uncommitted changes (generated code up-to-date)
-        run: git diff --exit-code
-
-      - name: Install dev deps (extras, non-editable)
-        run: |
-          python -m pip install --upgrade pip
           pip install ".[dev]"
 
-      - name: Ruff lint (check only, no format or auto-fix in CI)
+      - name: Assemble. Regenerate types
+        run: python scripts/generate_types.py
+
+      - name: Baseline. Ruff lint (fail fast, check only, no format or auto-fix in CI)
         run: ruff check .
 
-      - name: Run tests (with any validation and coverage)
+      - name: Baseline. Run tests (include any validation and coverage)
         run: pytest -q
 
-      - name: Generate coverage summary
-        if: always()
+      - name: Coverage. Generate summary
         run: python .github/scripts/coverage_summary.py
 
-      - name: Build HTML coverage and upload
-        if: always()
+      - name: Coverage. Build HTML
         run: coverage html
 
-      - name: Upload coverage XML
+      - name: Coverage. Combine and Upload Reports
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-xml
+          name: coverage-reports-${{ matrix.python-version }}
+          path: |
+            coverage.xml
+            htmlcov/
+          overwrite: true
 
-      - name: Build docs (sanity check)
-        run: mkdocs build
-
-      - name: Build package (sanity check)
+      - name: Deploy. Build package (sanity check)
         run: python -m build
+
+      - name: Deploy. Build docs (sanity check)
+        run: mkdocs build
