@@ -103,10 +103,11 @@ Open: <http://127.0.0.1:8000/>
 
 ## DEV 4. Release
 
-1. Update `CHANGELOG.md` with notable changes.
-2. Ensure all CI checks pass.
-3. Build & verify package locally.
-4. Tag and push (setuptools_scm uses the tag).
+1. Update `CHANGELOG.md` with notable changes (beginning and end).
+2. Update pyproject.toml with correct version "civic-transparency-spec==x.y.z",
+3. Ensure all CI checks pass.
+4. Build & verify package locally.
+5. Tag and push (setuptools_scm uses the tag).
 
 ```bash
 git add .

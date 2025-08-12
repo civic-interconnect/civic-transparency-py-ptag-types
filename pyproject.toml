@@ -45,7 +45,7 @@ dev = [
     "jsonschema", 
     "openapi-spec-validator",
     "datamodel-code-generator",
-    "civic-transparency-spec==0.1.6",
+    "civic-transparency-spec==0.1.7",
 ]
 
 [tool.coverage.report]
