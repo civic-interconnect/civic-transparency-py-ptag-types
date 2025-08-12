@@ -10,9 +10,7 @@ Our goals are clarity, privacy-by-design, and low friction for collaborators.
 ## Ways to Contribute
 
 - **Docs**: Fix typos, clarify definitions, or improve examples in `docs/en/**`.
-- **Spec**: Propose changes to the spec text, normative notes, or privacy language.
-- **Schemas**: Add or adjust JSON Schemas or the OpenAPI file in `src/ci/transparency/spec/schemas/`.
-- **CWEs**: Contribute new transparency pitfalls under `docs/en/docs/cwe/`.
+- **Actions**: Propose changes to project workflow and action files to follow best practices.
 
 ---
 
@@ -22,13 +20,11 @@ Our goals are clarity, privacy-by-design, and low friction for collaborators.
 - **License**: All contributions are accepted under the repo's **MIT License**.
 - **Single Source of Truth**: The normative artifacts are in `src/ci/transparency/spec/schemas/`. Documentation should not contradict these files.
 
-
 ---
 
 ## Before You Start
 
 **Open an Issue or Discussion** for non-trivial changes so we can align early.
-
 
 ---
 
@@ -39,7 +35,6 @@ Our goals are clarity, privacy-by-design, and low friction for collaborators.
   - **MINOR**: backwards-compatible additions
   - **PATCH**: clarifications/typos
 - When things change, update related docs, examples, and `CHANGELOG.md`.
-
 
 ---
 
@@ -61,10 +56,10 @@ Our goals are clarity, privacy-by-design, and low friction for collaborators.
 
 ---
 
-
 ## DEV 1. Start Locally
 
 **Mac/Linux/WSL**
+
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
@@ -75,6 +70,7 @@ python3 scripts/generate_types.py
 ```
 
 **Windows (PowerShell)**
+
 ```powershell
 py -3.11 -m venv .venv
 .\.venv\Scripts\activate
@@ -86,12 +82,33 @@ py scripts\generate_types.py
 
 ## DEV 2. Validate Changes
 
-Run all checks.
+1. Run all checks.
 
 ```shell
 mkdocs build
 pre-commit run --all-files
 pytest -q
+```
+
+2. Build and Verify Package
+
+Mac/Linux/WSL (build, inspect)
+
+```
+python3 -m build
+unzip -l dist/*.whl
+```
+
+Windows PowerShell (build, extract, clean up)
+
+```
+py -m build
+
+$TMP = New-Item -ItemType Directory -Path ([System.IO.Path]::GetTempPath()) -Name ("wheel_" + [System.Guid]::NewGuid())
+Expand-Archive dist\*.whl -DestinationPath $TMP.FullName
+Get-ChildItem -Recurse $TMP.FullName | ForEach-Object { $_.FullName.Replace($TMP.FullName + '\','') }
+Remove-Item -Recurse -Force $TMP
+```
 
 ## DEV 3. Preview Docs
 
@@ -118,7 +135,6 @@ git tag vx.y.z -m "x.y.z"
 git push origin vx.y.z
 ```
 
-> A GitHub Action will **build**, **publish to PyPI** (Trusted Publishing), **create a GitHub Release** with artifacts, and **deploy versioned docs** with `mike`.  
+> A GitHub Action will **build**, **publish to PyPI** (Trusted Publishing), **create a GitHub Release** with artifacts, and **deploy versioned docs** with `mike`.
 
 > You do **not** need to run `gh release create` or upload files manually.
-
