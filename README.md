@@ -1,4 +1,4 @@
-# Civic Transparency - Types
+# Civic Transparency – Types
 
 [![Docs](https://img.shields.io/badge/docs-mkdocs--material-blue)](https://civic-interconnect.github.io/civic-transparency-types/)
 [![PyPI](https://img.shields.io/pypi/v/civic-transparency-types.svg)](https://pypi.org/project/civic-transparency-types/)
@@ -6,46 +6,41 @@
 [![CI Status](https://github.com/civic-interconnect/civic-transparency-types/actions/workflows/ci.yml/badge.svg)](https://github.com/civic-interconnect/civic-transparency-types/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
-> **Typed Python models (Pydantic v2) for the Civic Transparency specification.**  
+> **Typed Python models (Pydantic v2) for the Civic Transparency schema.**
 
-> Maintained by **[Civic Interconnect](https://github.com/civic-interconnect)**.
+> Maintained by [**Civic Interconnect**](https://github.com/civic-interconnect).
 
 - **Docs (types):** https://civic-interconnect.github.io/civic-transparency-types/
-- **Spec (schemas/OpenAPI):** https://civic-interconnect.github.io/civic-transparency-spec/
+- **Schemas & OpenAPI (spec):** https://civic-interconnect.github.io/civic-transparency-spec/
 - **Contributing:** [CONTRIBUTING.md](./CONTRIBUTING.md)
 
+---
 
 ## Install
 
 ```bash
 pip install civic-transparency-types
-# OR Pin version
-pip install "civic-transparency-spec==0.1.1"
 ```
 
-> This package depends on `civic-transparency-spec` and is generated from its JSON Schemas.
+> This package depends on `civic-transparency-spec` and uses its JSON Schemas to generate types.
 
+---
 
+## Quick Start
 
-## Quick start
-
-### Import the canonical models
+### Import canonical models
 
 ```python
 from ci.transparency.types import Meta, Run, Scenario, Series, ProvenanceTag
 ```
 
-Or use per-module imports:
+Or import directly by module:
 
 ```python
-from ci.transparency.types.meta import Meta
-from ci.transparency.types.run import Run
-from ci.transparency.types.scenario import Scenario
 from ci.transparency.types.series import Series
-from ci.transparency.types.provenance_tag import ProvenanceTag
 ```
 
-### Example: build & validate a `Series`
+### Example: Build and validate a `Series`
 
 ```python
 from ci.transparency.types import Series
@@ -57,17 +52,17 @@ series = Series(
     points=[]
 )
 
-# Pydantic v2 validation happens on init; raise if invalid:
+# Validate using Pydantic (raises if invalid)
 series.model_validate(series.model_dump())
 
-# Serialize to JSON-friendly dict
+# Serialize to JSON-compatible dict
 payload = series.model_dump()
 print(payload)
 ```
 
-### Example: validate against the JSON Schemas (optional)
+### Example: Validate against the JSON Schema (optional)
 
-If you also want to validate against the **normative** Draft-07 schemas shipped in `civic-transparency-spec`:
+To validate against the canonical Draft-07 schema:
 
 ```python
 import json
@@ -78,33 +73,34 @@ schema_text = files("ci.transparency.spec.schemas").joinpath("series.schema.json
 series_schema = json.loads(schema_text)
 
 Draft7Validator.check_schema(series_schema)
-Draft7Validator(series_schema).validate(payload)  # raises if invalid
+Draft7Validator(series_schema).validate(payload)
 ```
 
 ---
 
-## Regenerating types (contributors)
+## Regenerating Types (for contributors)
 
-Types are generated from `civic-transparency-spec` using `datamodel-code-generator`. Run:
+Types are generated using [`datamodel-code-generator`](https://github.com/koxudaxi/datamodel-code-generator). To regenerate:
 
 ```bash
 python scripts/generate_types.py
 ```
 
-This rewrites `src/ci/transparency/types/*.py` and updates `__init__.py` exports.
+This rewrites `src/ci/transparency/types/*.py` and updates `__init__.py`.
 
 ---
 
 ## Versioning
 
-- **SemVer**: follow the spec’s versions; types stay compatible with the corresponding `civic-transparency-spec`.
-- Pin both for reproducibility in clients, e.g.:
-  ```bash
-  pip install "civic-transparency-types==0.0.X" "civic-transparency-spec==0.0.X"
-  ```
+- **SemVer**: Mirrors the version of the underlying schema in `civic-transparency-spec`.
+- To ensure compatibility, pin both packages:
+
+```bash
+pip install "civic-transparency-types==0.1.*" "civic-transparency-spec==0.1.*"
+```
 
 ---
 
 ## About
 
-Civic Transparency is an open specification for privacy-preserving, non-partisan visibility into **how** content spreads online (not what it says).  
+Civic Transparency is a shared data model for privacy-preserving, non-partisan insight into how content spreads online.

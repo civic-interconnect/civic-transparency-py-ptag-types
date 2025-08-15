@@ -1,12 +1,18 @@
 # API
 
-Typed models are generated from the Civic Transparency **spec** and exposed via a single public package:
+Typed models reflect the Civic Transparency schemas and are exposed via a single public package:
 
 ```python
 import ci.transparency.types as ct
 ct.__all__  # -> ["Meta", "Run", "Scenario", "Series", "ProvenanceTag"]
 ct.__version__  # string, set by setuptools-scm
 ```
+
+## Package overview
+
+- **`ci.transparency.spec`**: Normative Draft-07 JSON Schemas and OpenAPI definitions.
+- **`ci.transparency.types`**: Runtime model layer using Pydantic, backed by JSON Schemas.
+  
 
 ## Public modules / classes
 
@@ -43,9 +49,9 @@ type(m).model_validate_json(bytes)  # validate JSON string/bytes
 
 ### Validation & strictness
 
-- **Types** follow the spec: e.g., properties with `"format": "date-time"` become `datetime` fields.
+- **Types follow the schema definitions:** for example, a property with "format": "date-time" becomes a datetime field in Python.
 - **Unknown fields** are rejected (`extra="forbid"`).
-- **Enums / patterns / min/max** from the spec are enforced by Pydantic at runtime.
+- **Enums / patterns / min/max** from the schema definitions are enforced by Pydantic at runtime.
 
 ```python
 from pydantic import ValidationError
@@ -70,11 +76,11 @@ If you need a Pydantic-generated JSON Schema for a specific model:
 schema = ct.Series.model_json_schema()
 ```
 
-> Note: this Pydantic-generated schema is useful for tooling, but the **normative** definitions live in the `civic-transparency-spec` package (Draft-07). If you must validate against the normative spec, see **Usage / Validating with jsonschema**.
+> Note: this Pydantic-generated schema is useful for tooling, but the **normative** definitions live in the `civic-transparency-spec` package (Draft-07). If you must validate against the normative definitions, see **Usage / Validating with jsonschema**.
 
 ---
 
-## Accessing the **spec** (normative) schemas
+## Accessing the **Schema Definitions**
 
 The normative JSON Schemas ship in the `civic-transparency-spec` package:
 
@@ -92,7 +98,7 @@ You can then validate payloads with `jsonschema` (see examples in **Usage**).
 
 ## Versioning
 
-- This package tracks the spec closely. Pin compatible versions for reproducibility:
+- This package tracks the schema definitions closely. Pin compatible versions for reproducibility:
   ```bash
   pip install "civic-transparency-types==0.1.*" "civic-transparency-spec==0.1.*"
   ```

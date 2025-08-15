@@ -15,6 +15,17 @@ and this project adheres to **[Semantic Versioning](https://semver.org/spec/v2.0
 
 ---
 
+## [0.1.8] - 2025-08-14
+
+### Changed
+
+- **Docs & Metadata:** Refined documentation, cleaned internal references, and improved contributor guidance.
+
+
+> No schema or API changes in this release.
+
+---
+
 ## [0.1.7] - 2025-08-11
 
 ### Changed

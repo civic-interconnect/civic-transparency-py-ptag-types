@@ -1,6 +1,6 @@
 # Civic Transparency – Types (Python)
 
-Typed Python models for the Civic Transparency spec (Pydantic v2).
+Typed Python models for the Civic Transparency Schema Definitions (Pydantic v2).
 
 ## Install
 
@@ -50,4 +50,4 @@ except ValidationError as e:
 
 ## Versioning
 
-These types are **generated from the Civic Transparency spec**. Keep your project pinned to a compatible versions set (e.g., `civic-transparency-types==0.1.x`) to avoid unexpected breaking changes.
+These types are **generated from the Civic Transparency Schema Definitions**. Keep your project pinned to a compatible versions set (e.g., `civic-transparency-types==0.1.x`) to avoid unexpected breaking changes.

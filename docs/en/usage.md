@@ -6,7 +6,7 @@ This page shows common patterns for loading, validating, and serializing Civic T
 
 ```bash
 pip install civic-transparency-types
-# (optional, recommended) pin alongside the spec
+# (optional, recommended) pin alongside the schema definitions
 pip install "civic-transparency-types==0.1.*" "civic-transparency-spec==0.1.*"
 ```
 
@@ -25,7 +25,7 @@ series = Series(
 )
 ```
 
-If any field violates the spec (enum, pattern, required, etc.), Pydantic raises `ValidationError`.
+If any field violates the model (enum, pattern, required, etc.), Pydantic raises `ValidationError`.
 
 ```python
 from pydantic import ValidationError
@@ -70,7 +70,7 @@ loaded2 = Series.model_validate_json(text)      # JSON -> Series
 
 ---
 
-## Validating with **jsonschema** (normative spec)
+## Validating with **jsonschema**
 
 If you want an *extra* guardrail using the official Draft-07 schemas:
 
@@ -88,7 +88,6 @@ Draft7Validator.check_schema(series_schema)          # sanity check the schema i
 Draft7Validator(series_schema).validate(payload)     # raises jsonschema.ValidationError if invalid
 ```
 
-> In practice, Pydantic’s validation should already match the spec. This step is optional and mostly useful for CI or cross-language parity.
 
 ---
 
@@ -150,19 +149,19 @@ git diff --exit-code
 ## Troubleshooting
 
 **“Unknown field …”**  
-The models are strict (`extra="forbid"`). Remove unexpected keys or update the spec & regenerate.
+The models are strict (`extra="forbid"`). Remove unexpected keys or update the schema definitions & regenerate.
 
 **Datetime parsing**  
 Use ISO 8601 (`YYYY-MM-DDTHH:MM:SSZ` or with offset). Pydantic converts to `datetime`.
 
 **Version mismatches**  
-Pin both packages to compatible `0.1.*` versions. If the spec updates fields/enums, regenerate types.
+Pin both packages to compatible `0.1.*` versions. If the definitions change, regenerate types.
 
 ---
 
 ## See also
 
-- Spec & Schemas: <https://civic-interconnect.github.io/civic-transparency-spec/>
+- Schemas: <https://civic-interconnect.github.io/civic-transparency-spec/>
 - API Reference:
   - [Meta](reference/meta.md)
   - [Run](reference/run.md)

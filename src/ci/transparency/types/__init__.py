@@ -10,3 +10,4 @@ from ._version import __version__  # noqa: F401
 __all__ = ["Meta", "Run", "Scenario", "Series", "ProvenanceTag"]
 __all__ = ["Meta", "Run", "Scenario", "Series", "ProvenanceTag"]
 __all__ = ["Meta", "Run", "Scenario", "Series", "ProvenanceTag"]
+__all__ = ["Meta", "Run", "Scenario", "Series", "ProvenanceTag"]

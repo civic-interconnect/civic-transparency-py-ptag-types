@@ -99,7 +99,7 @@ def main() -> int:
     (OUT_DIR / "__init__.py").touch(exist_ok=True)
 
     for schema_name, (out_py, root_class) in TARGETS.items():
-        # Locate resource inside installed spec package
+        # Locate resource inside installed package
         res = files(SCHEMA_PKG).joinpath(schema_name)
         if not res.is_file():
             print(

@@ -18,7 +18,7 @@ Our goals are clarity, privacy-by-design, and low friction for collaborators.
 
 - **Code of Conduct**: Be respectful and constructive. Reports: `info@civicinterconnect.org`.
 - **License**: All contributions are accepted under the repo's **MIT License**.
-- **Single Source of Truth**: The normative artifacts are in `src/ci/transparency/spec/schemas/`. Documentation should not contradict these files.
+- **Single Source of Truth**: The definitions are in `src/ci/transparency/spec/schemas/`. Documentation should not contradict these files.
 
 ---
 
