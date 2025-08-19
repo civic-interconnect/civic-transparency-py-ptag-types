@@ -15,7 +15,7 @@ jobs:
       contents: write # gh-pages in docs job
     
     steps:
-      - name: Checkout (full history) # so setuptools_scm can see tags
+      - name: Checkout (full history with tags)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0

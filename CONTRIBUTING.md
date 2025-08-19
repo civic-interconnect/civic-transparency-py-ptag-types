@@ -67,6 +67,7 @@ python3 -m pip install --upgrade pip setuptools wheel
 python3 -m pip install -e ".[dev]"
 pre-commit install
 python3 scripts/generate_types.py
+git add src/ci/transparency/types/
 ```
 
 **Windows (PowerShell)**
@@ -78,15 +79,27 @@ py -m pip install --upgrade pip setuptools wheel
 py -m pip install -e ".[dev]"
 pre-commit install
 py scripts\generate_types.py
+git add src/ci/transparency/types/
 ```
 
 ## DEV 2. Validate Changes
 
-1. Run all checks.
+1. Generate types first in case schema changed.
+2. Add generated changes to git.
+3. Commit updated types to git. 
+4. Fix code formatting and linting.
+5. Run precommit checks.
+6. Build documentation to test.
+7. Run tests.
 
 ```shell
-mkdocs build
+py scripts\generate_types.py
+git add src/ci/transparency/types/
+git commit -m "Update generated types"
+ruff format .
+ruff check --fix .
 pre-commit run --all-files
+mkdocs build
 pytest -q
 ```
 
@@ -127,6 +140,8 @@ Open: <http://127.0.0.1:8000/>
 5. Tag and push (setuptools_scm uses the tag).
 
 ```bash
+ruff format .
+pre-commit run --all-files
 git add .
 git commit -m "Prep vx.y.z"
 git push origin main

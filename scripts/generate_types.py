@@ -14,9 +14,6 @@ OUT_DIR = Path("src/ci/transparency/types")
 
 # Map input schema filename -> output module + root class name
 TARGETS = {
-    "meta.schema.json": ("meta.py", "Meta"),
-    "run.schema.json": ("run.py", "Run"),
-    "scenario.schema.json": ("scenario.py", "Scenario"),
     "series.schema.json": ("series.py", "Series"),
     "provenance_tag.schema.json": ("provenance_tag.py", "ProvenanceTag"),
 }
@@ -24,13 +21,10 @@ TARGETS = {
 
 def _ensure_init_exports(init_path: Path) -> None:
     required_lines = [
-        "from .meta import Meta",
-        "from .run import Run",
-        "from .scenario import Scenario",
         "from .series import Series",
         "from .provenance_tag import ProvenanceTag",
         "from ._version import __version__  # noqa: F401",
-        "__all__ = ['Meta', 'Run', 'Scenario', 'Series', 'ProvenanceTag']",
+        "__all__ = ['Series', 'ProvenanceTag']",
     ]
 
     existing = init_path.read_text(encoding="utf-8") if init_path.exists() else ""

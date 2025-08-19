@@ -5,9 +5,7 @@ This page shows common patterns for loading, validating, and serializing Civic T
 ## Install
 
 ```bash
-pip install civic-transparency-types
-# (optional, recommended) pin alongside the schema definitions
-pip install "civic-transparency-types==0.1.*" "civic-transparency-spec==0.1.*"
+pip install "civic-transparency-types==0.2.*" "civic-transparency-spec==0.2.*"
 ```
 
 ---
@@ -23,29 +21,6 @@ series = Series(
     interval="minute",
     points=[],
 )
-```
-
-If any field violates the model (enum, pattern, required, etc.), Pydantic raises `ValidationError`.
-
-```python
-from pydantic import ValidationError
-from ci.transparency.types import Meta
-
-try:
-    Meta(  # 'window.end' missing, will fail
-        topic="topic",
-        window={"start": "2026-02-01T00:00:00Z"},
-        notes=None,
-        seed=0,
-        accounts_generated=0,
-        posts_raw=0,
-        buckets_aggregated=0,
-        scenario_file="scenario.yaml",
-        scenario_sha256="0"*64,
-        events=[],
-    )
-except ValidationError as e:
-    print(e)
 ```
 
 ---
@@ -72,20 +47,20 @@ loaded2 = Series.model_validate_json(text)      # JSON -> Series
 
 ## Validating with **jsonschema**
 
-If you want an *extra* guardrail using the official Draft-07 schemas:
+If you want an *extra* guardrail using the official schemas:
 
 ```python
 import json
 from importlib.resources import files
-from jsonschema import Draft7Validator
+from jsonschema import Draft202012Validator
 
 # 1) get the normative schema from the spec package
 schema_text = files("ci.transparency.spec.schemas").joinpath("series.schema.json").read_text("utf-8")
 series_schema = json.loads(schema_text)
 
 # 2) validate the payload dict you produced with Pydantic
-Draft7Validator.check_schema(series_schema)          # sanity check the schema itself
-Draft7Validator(series_schema).validate(payload)     # raises jsonschema.ValidationError if invalid
+Draft202012Validator.check_schema(series_schema)          # sanity check the schema itself
+Draft202012Validator(series_schema).validate(payload)     # raises jsonschema.ValidationError if invalid
 ```
 
 
@@ -155,7 +130,7 @@ The models are strict (`extra="forbid"`). Remove unexpected keys or update the s
 Use ISO 8601 (`YYYY-MM-DDTHH:MM:SSZ` or with offset). Pydantic converts to `datetime`.
 
 **Version mismatches**  
-Pin both packages to compatible `0.1.*` versions. If the definitions change, regenerate types.
+Pin both packages to compatible versions. If the definitions change, regenerate types.
 
 ---
 
@@ -163,8 +138,5 @@ Pin both packages to compatible `0.1.*` versions. If the definitions change, reg
 
 - Schemas: <https://civic-interconnect.github.io/civic-transparency-spec/>
 - API Reference:
-  - [Meta](reference/meta.md)
-  - [Run](reference/run.md)
-  - [Scenario](reference/scenario.md)
   - [Series](reference/series.md)
   - [Provenance Tag](reference/provenance_tag.md)

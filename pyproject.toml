@@ -22,11 +22,6 @@ name = "civic-transparency-types"
 readme = "README.md"
 requires-python = ">=3.11"
 
-[project.urls]
-Documentation = "https://civic-interconnect.github.io/civic-transparency-types/latest/"
-Homepage = "https://github.com/civic-interconnect/civic-transparency-types"
-Repository = "https://github.com/civic-interconnect/civic-transparency-types"
-
 [project.optional-dependencies]
 dev = [ 
   "build",
@@ -45,8 +40,13 @@ dev = [
   "jsonschema", 
   "openapi-spec-validator",
   "datamodel-code-generator",
-  "civic-transparency-spec==0.1.7",
+  "civic-transparency-spec>=0.2.0,<0.3.0",
 ]
+
+[project.urls]
+Documentation = "https://civic-interconnect.github.io/civic-transparency-types/latest/"
+Homepage = "https://github.com/civic-interconnect/civic-transparency-types"
+Repository = "https://github.com/civic-interconnect/civic-transparency-types"
 
 [tool.coverage.report]
 show_missing = true

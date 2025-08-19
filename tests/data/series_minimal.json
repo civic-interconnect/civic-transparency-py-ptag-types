@@ -1,0 +1,36 @@
+{
+  "topic": "#TestTopic",
+  "generated_at": "2025-08-19T12:00:00Z",
+  "interval": "minute",
+  "points": [
+    {
+      "ts": "2025-08-19T12:00:00Z",
+      "volume": 100,
+      "reshare_ratio": 0.25,
+      "recycled_content_rate": 0.1,
+      "acct_age_mix": {
+        "0-7d": 0.2,
+        "8-30d": 0.3,
+        "1-6m": 0.3,
+        "6-24m": 0.15,
+        "24m+": 0.05
+      },
+      "automation_mix": {
+        "manual": 0.8,
+        "scheduled": 0.1,
+        "api_client": 0.05,
+        "declared_bot": 0.05
+      },
+      "client_mix": {
+        "web": 0.6,
+        "mobile": 0.35,
+        "third_party_api": 0.05
+      },
+      "coordination_signals": {
+        "burst_score": 0.3,
+        "synchrony_index": 0.2,
+        "duplication_clusters": 5
+      }
+    }
+  ]
+}

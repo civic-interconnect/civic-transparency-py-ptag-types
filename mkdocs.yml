@@ -26,17 +26,17 @@ theme:
 
 nav:
   - Home: index.md
-  - Usage: usage.md
   - API: api.md
   - Reference:
-      - Meta: reference/meta.md
       - Provenance Tag: reference/provenance_tag.md
-      - Run: reference/run.md
-      - Scenario: reference/scenario.md
       - Series: reference/series.md
   - Spec:
       - Civic Transparency Spec (website): https://civic-interconnect.github.io/civic-transparency-spec/
+      - Civic Transparency Spec (source): https://github.com/civic-interconnect/civic-transparency-spec
 
+  - Performance: performance.md
+  - Usage: usage.md
+  
 docs_dir: docs/en
 
 plugins:

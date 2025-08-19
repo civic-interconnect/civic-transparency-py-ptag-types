@@ -4,7 +4,7 @@
 def test_public_api_surface():
     import ci.transparency.types as t
 
-    expected = {"Meta", "Run", "Scenario", "Series", "ProvenanceTag"}
+    expected = {"Series", "ProvenanceTag"}
     # __all__ exists and contains the public names
     assert expected.issubset(set(getattr(t, "__all__", [])))
 

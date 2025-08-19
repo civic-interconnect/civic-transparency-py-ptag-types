@@ -1,53 +1,79 @@
 # Civic Transparency – Types (Python)
 
-Typed Python models for the Civic Transparency Schema Definitions (Pydantic v2).
+Strongly-typed Python models for the [Civic Transparency specification](https://civic-interconnect.github.io/civic-transparency-spec/), built with Pydantic v2.
 
-## Install
+## What This Package Provides
+
+- **Runtime Type Safety:** Full validation of civic transparency data structures
+- **IDE Support:** Complete type hints and autocompletion
+- **Schema Compliance:** Generated directly from canonical JSON schemas
+- **Privacy Compliance:** Built-in validation for privacy-preserving data patterns
+
+## Installation
 
 ```bash
 pip install civic-transparency-types
 ```
 
-## Quick Start
+## Quick Example
 
 ```python
 from ci.transparency.types import Series
+from datetime import datetime
 
+# Create a validated civic data series
 series = Series(
-    topic="#CityElection2026",
-    generated_at="2026-02-07T00:00:00Z",  # ISO 8601; parsed to datetime
+    topic="#CityBudget2025",
+    generated_at=datetime.now().isoformat() + "Z",
     interval="minute",
-    points=[],  # add your time-bucketed data here
+    points=[]  # Your aggregated, privacy-preserving data points
 )
-print(series.model_dump())  # dict ready to JSON-serialize
+
+# Automatic validation ensures schema compliance
+validated_data = series.model_dump()  # Safe for JSON serialization
 ```
 
-**Pydantic validation example** (what happens on bad input):
+## Key Features
 
-```python
-from ci.transparency.types import Meta
-from pydantic import ValidationError
+### Type Safety
+All models enforce the Civic Transparency schema constraints at runtime:
+- Enum validation for categorical fields
+- Date/time format validation (ISO 8601)
+- Numeric range and string pattern validation
+- Required field enforcement
 
-try:
-    Meta(topic="ok", window={"start": "2026-02-01T00:00:00Z"})  # missing 'end'
-except ValidationError as e:
-    print(e)
-```
+### Privacy by Design
+The type system enforces privacy-preserving patterns:
+- No direct identifiers allowed
+- Bucketed categorical values (e.g., account age ranges)
+- Aggregated statistical summaries only
+- Deduplication hashes instead of content
 
-## What you get
+### Easy Integration
+Works seamlessly with modern Python tooling:
+- **FastAPI:** Automatic request/response validation
+- **Dataclasses:** Compatible with existing data structures  
+- **JSON APIs:** Native serialization/deserialization
+- **Testing:** Clear validation error messages
 
-- **Typed models**: `Meta`, `Run`, `Scenario`, `Series`, `ProvenanceTag`
-- **Validation**: Pydantic v2 enforces schema constraints (formats, enums, min/max, patterns)
-- **Interop**: `.model_dump()` for JSON, `.model_validate()` to load/validate existing data
+## Available Types
 
-## API Reference
+| Model | Purpose | Key Fields |
+|-------|---------|------------|
+| **Series** | Time-bucketed aggregated data | `topic`, `points`, `interval` |
+| **ProvenanceTag** | Post metadata (no PII) | `acct_type`, `automation_flag`, `media_provenance` |
 
-- [Meta](reference/meta.md)
-- [Run](reference/run.md)
-- [Scenario](reference/scenario.md)
-- [Series](reference/series.md)
-- [Provenance Tag](reference/provenance_tag.md)
+## See Also
 
-## Versioning
+- **[API Reference](api.md):** Complete type documentation
+- **[Series Reference](reference/series.md):** Detailed field documentation
+- **[Provenance Tag Reference](reference/provenance_tag.md):** Metadata field guide
+- **[Performance Guide](performance.md):** Performance guide
+- **[Usage Guide](usage.md):** Common patterns and examples
 
-These types are **generated from the Civic Transparency Schema Definitions**. Keep your project pinned to a compatible versions set (e.g., `civic-transparency-types==0.1.x`) to avoid unexpected breaking changes.
+## Relationship to Specification
+
+This package provides the **runtime implementation** of types defined in the [Civic Transparency specification](https://civic-interconnect.github.io/civic-transparency-spec/).
+The types are automatically generated from the canonical JSON schemas, ensuring perfect alignment with the specification.
+
+For schema definitions, OpenAPI documentation, and specification details, visit the [spec repository](https://civic-interconnect.github.io/civic-transparency-spec/).
