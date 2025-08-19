@@ -93,6 +93,7 @@ git add src/ci/transparency/types/
 7. Run tests.
 
 ```shell
+git pull
 py scripts\generate_types.py
 git add src/ci/transparency/types/
 git commit -m "Update generated types"
@@ -134,7 +135,7 @@ Open: <http://127.0.0.1:8000/>
 ## DEV 4. Release
 
 1. Update `CHANGELOG.md` with notable changes (beginning and end).
-2. Update pyproject.toml with correct version "civic-transparency-spec==x.y.z",
+2. Update pyproject.toml with correct version "civic-transparency-spec>=x.y.z...",
 3. Ensure all CI checks pass.
 4. Build & verify package locally.
 5. Tag and push (setuptools_scm uses the tag).

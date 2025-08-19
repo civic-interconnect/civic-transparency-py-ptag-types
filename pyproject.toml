@@ -40,7 +40,7 @@ dev = [
   "jsonschema", 
   "openapi-spec-validator",
   "datamodel-code-generator",
-  "civic-transparency-spec>=0.2.0,<0.3.0",
+  "civic-transparency-spec>=0.2.1,<0.3.0",
 ]
 
 [project.urls]
