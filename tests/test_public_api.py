@@ -4,7 +4,7 @@
 def test_public_api_surface():
     import ci.transparency.types as t
 
-    expected = {"Meta", "Run", "Scenario", "Series", "ProvenanceTag"}
+    expected = {"Series", "ProvenanceTag"}
     # __all__ exists and contains the public names
     assert expected.issubset(set(getattr(t, "__all__", [])))
 
@@ -15,6 +15,6 @@ def test_public_api_surface():
 
 
 def test_version_present_and_string():
-    from ci.transparency.types import __version__ # type: ignore
+    from ci.transparency.types import __version__  # type: ignore
 
     assert isinstance(__version__, str) and __version__

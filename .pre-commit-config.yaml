@@ -1,8 +1,22 @@
-# .pre-commit-config.yml
+# .pre-commit-config.yaml
+# Local development checks - fast feedback for developers
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.12.8
     hooks:
+      - id: ruff-format
       - id: ruff
         args: [--fix]
 
+  - repo: local
+    hooks:
+      # Quick version compatibility check (current environment only)
+      - id: check-version-compatibility
+        name: Check version compatibility (current env)
+        entry: python .github/scripts/check_version_compatibility.py
+        language: system
+        files: ^(pyproject\.toml|src/.*\.py)$
+        pass_filenames: false
+        
+      # NOTE: Generated types check disabled due to setuptools_scm version instability
+      # Run manually: python scripts/generate_types.py && git add src/ci/transparency/types/

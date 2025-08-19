@@ -7,8 +7,6 @@ edit_uri: edit/main/docs/en/
 
 theme:
   name: material
-  features:
-  - content.footer
   language: en
   favicon: img/favicon.png
   palette:
@@ -16,6 +14,7 @@ theme:
     primary: indigo
     accent: indigo
   features:
+    - content.footer
     - navigation.tabs
     - navigation.top
     - navigation.expand
@@ -23,20 +22,21 @@ theme:
     - navigation.indexes
     - navigation.tracking
     - navigation.tabs.stick
+  copyright: Copyright &copy; 2025 Civic Interconnect
 
 nav:
   - Home: index.md
-  - Usage: usage.md
   - API: api.md
   - Reference:
-      - Meta: reference/meta.md
       - Provenance Tag: reference/provenance_tag.md
-      - Run: reference/run.md
-      - Scenario: reference/scenario.md
       - Series: reference/series.md
   - Spec:
       - Civic Transparency Spec (website): https://civic-interconnect.github.io/civic-transparency-spec/
+      - Civic Transparency Spec (source): https://github.com/civic-interconnect/civic-transparency-spec
 
+  - Performance: performance.md
+  - Usage: usage.md
+  
 docs_dir: docs/en
 
 plugins:
@@ -50,7 +50,6 @@ plugins:
         - locale: en
           default: true
           name: English
-          build: true
   - git-revision-date-localized:
       type: iso_date
       fallback_to_build_date: true

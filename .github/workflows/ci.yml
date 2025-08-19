@@ -1,15 +1,198 @@
 # .github/workflows/ci.yml
-name: Civic Transparency Types CI
+name: Civic Transparency Types CI (Build Types, Lint, Test, Coverage)
+# 
+# DESIGN PRINCIPLES:
+# - CI VALIDATES, never generates - all generated code must be committed by developers
+# - Scope naming (Assemble/Baseline/Coverage/Deploy) reinforces CI/CD patterns
+# - Compatibility matrix tests multiple Python + spec version combinations
+# - Performance monitoring only on main branch to avoid noise
+# - Fail fast design - catch issues before they reach release
+#
+# DEVELOPER WORKFLOW:
+# 1. Generate types locally: python scripts/generate_types.py
+# 2. Commit generated files: git add src/ci/transparency/types/ && git commit
+# 3. Push - CI validates committed types work correctly
+#
+# CI PHASES:
+# - Assemble: Install dependencies, verify environment setup
+# - Baseline: Core validation (types exist, lint passes, tests pass)  
+# - Coverage: Generate reports and upload artifacts
+# - Deploy: Build package and docs (sanity checks for release readiness)
+
 
 on:
   push:
     branches: [ main ]
   pull_request:
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
+  # Compatibility Matrix - Test across Python and spec versions
+  compatibility-matrix:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+        spec-version: ["0.2.0"]
+        include:
+          # Test with latest spec development version
+          - python-version: "3.11"
+            spec-version: "latest"
+          # Test edge cases
+          - python-version: "3.13"
+            spec-version: "0.2.0"
+      fail-fast: false  # Continue testing other combinations
+
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Assemble. Install specific spec version
+        run: |
+          pip install --upgrade pip setuptools wheel
+          if [ "${{ matrix.spec-version }}" = "latest" ]; then
+            pip install git+https://github.com/civic-interconnect/civic-transparency-spec.git
+          else
+            pip install civic-transparency-spec==${{ matrix.spec-version }}
+          fi
+
+      - name: Assemble. Install types package
+        run: pip install -e .
+
+      - name: Baseline. Verify version compatibility
+        run: |
+          python -c "
+          try:
+              import ci.transparency.spec
+              import ci.transparency.types
+              print(f'Spec version: {getattr(ci.transparency.spec, \"__version__\", \"unknown\")}')
+              print(f'Types version: {getattr(ci.transparency.types, \"__version__\", \"dev\")}')
+          except Exception as e:
+              print(f'Version check failed: {e}')
+              exit(1)
+          "
+
+      - name: Baseline. Test basic functionality
+        run: |
+          python -c "
+          from ci.transparency.types import Series, ProvenanceTag
+          from datetime import datetime
+          
+          # Test ProvenanceTag validation (fixed hash length)
+          tag = ProvenanceTag(
+              acct_age_bucket='1-6m',
+              acct_type='person',
+              automation_flag='manual',
+              post_kind='original',
+              client_family='mobile',
+              media_provenance='hash_only',
+              dedup_hash='a1b2c3d4'
+          )
+          print('ProvenanceTag validation works')
+          
+          # Test Series validation
+          series = Series(
+              topic='#CompatibilityTest',
+              generated_at=datetime.now().isoformat() + 'Z',
+              interval='minute',
+              points=[]
+          )
+          print('Series validation works')
+          
+          # Test JSON serialization
+          tag_json = tag.model_dump_json()
+          series_json = series.model_dump_json()
+          print('JSON serialization works')
+          
+          print(f'Compatibility verified: Python ${{ matrix.python-version }} + Spec ${{ matrix.spec-version }}')
+          "
+
+  # Main CI Pipeline (Educational scope structure preserved)
   ci:
     runs-on: ubuntu-latest
+    needs: compatibility-matrix  # Wait for compatibility verification
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - name: Checkout (full history with tags) 
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python and cache ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+
+      - name: Assemble. Install all dev dependencies (non-editable)
+        run: |
+          pip install ".[dev]"
+
+      - name: Assemble. Verify version compatibility
+        run: |
+          python .github/scripts/check_version_compatibility.py
+
+      - name: Baseline. Verify committed types exist and are valid
+        run: |
+          # Check that required generated files exist
+          if [ ! -f "src/ci/transparency/types/series.py" ] || [ ! -f "src/ci/transparency/types/provenance_tag.py" ]; then
+            echo 'ERROR: Generated type files are missing!'
+            echo 'Run locally:'
+            echo '  python scripts/generate_types.py'
+            echo '  git add src/ci/transparency/types/'
+            echo '  git commit -m "Add generated types"'
+            exit 1
+          fi
+          
+          # Basic validation that the types can be imported and used
+          python -c "
+          from ci.transparency.types import Series, ProvenanceTag
+          print('PASS: Generated types are valid and importable')
+          "
+
+      - name: Baseline. Ruff lint (fail fast, check only, no format or auto-fix in CI)
+        run: ruff check .
+
+      - name: Baseline. Run tests (include any validation and coverage)
+        run: pytest -q
+
+      - name: Coverage. Generate summary
+        run: python .github/scripts/coverage_summary.py
+
+      - name: Coverage. Build HTML
+        run: coverage html
+
+      - name: Coverage. Combine and Upload Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports-${{ matrix.python-version }}
+          path: |
+            coverage.xml
+            htmlcov/
+          overwrite: true
+
+      - name: Deploy. Build package (sanity check)
+        run: python -m build
+
+      - name: Deploy. Build docs (sanity check)
+        run: mkdocs build
+
+  # Performance monitoring (runs only on main branch)
+  performance:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs: ci
 
     steps:
       - name: Checkout
@@ -17,39 +200,45 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Python
+      - name: Setup Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Cache pip
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+      - name: Assemble. Install dependencies
+        run: pip install ".[dev]"
 
-      - name: Install dev + codegen deps
+      - name: Baseline. Run performance benchmarks
         run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[dev,codegen]"
+          python benchmark_performance.py > performance_results.txt
 
-      # Keep generated models in sync with the published spec
-      - name: Regenerate types
-        run: python scripts/generate_types.py
+      - name: Coverage. Upload performance results
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-benchmarks
+          path: performance_results.txt
 
-      - name: Check for uncommitted changes (generated code up-to-date)
-        run: git diff --exit-code
-
-      - name: Ruff lint
-        run: ruff check .
-
-      - name: Run tests (pytest picks addopts from pyproject)
-        run: pytest -q
-
-      - name: Build docs (sanity)
-        run: mkdocs build
-
-      - name: Build package (sanity)
-        run: python -m build
+      - name: Baseline. Check for performance regressions
+        run: |
+          python -c "
+          with open('performance_results.txt') as f:
+              content = f.read()
+              
+          import re
+          provenance_rps = re.search(r'ProvenanceTag:\s+([0-9,]+) records/sec', content)
+          series_rps = re.search(r'Series \(minimal\):\s+([0-9,]+) records/sec', content)
+          
+          if provenance_rps:
+              rps = int(provenance_rps.group(1).replace(',', ''))
+              if rps < 100000:
+                  print(f'WARNING: ProvenanceTag performance regression: {rps:,}/sec')
+              else:
+                  print(f'PASS: ProvenanceTag performance: {rps:,}/sec')
+                  
+          if series_rps:
+              rps = int(series_rps.group(1).replace(',', ''))
+              if rps < 20000:
+                  print(f'WARNING: Series performance regression: {rps:,}/sec')
+              else:
+                  print(f'PASS: Series performance: {rps:,}/sec')
+          "

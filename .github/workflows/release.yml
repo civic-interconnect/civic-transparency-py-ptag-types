@@ -1,61 +1,64 @@
 # .github/workflows/release.yml
-name: CT Types Release (PyPI + GH Release + versioned docs)
+name: CT Types Release (GH Release + PyPI + versioned docs)
+# Designed to run only on version tags (e.g., v0.1.4).
+# Final step before distribution.
+# It builds distribution files, runs tests, prepares release, and publishes.
 
 on:
   push:
     tags:
-      - "v*.*.*"
+      - "v*.*.*"  # trigger only on version tags like v0.1.4
 
 permissions:
-  contents: write     # GH release + pushing docs
-  id-token: write     # PyPI Trusted Publishing
+  contents: write   # create the GitHub Release
+  id-token: write   # PyPI Trusted Publishing (OIDC)
 
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout with full history
+      - name: Checkout (full history with tags)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup Python
+      - name: Setup Python and cache
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: "pip"
 
-      - name: Install build & codegen deps
+      - name: Versioning. Extract plain version from tag (no leading `v`)
+        id: ver
+        shell: bash
+        run: echo "plain=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Versioning. Print build version for logs
+        run: echo "Building version ${{ steps.ver.outputs.plain }}"
+
+      - name: Assemble. Install all dev dependencies (non-editable)
         run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[dev,codegen]"
+          pip install ".[dev]"
 
-      - name: Regenerate types
+      - name: Assemble. Regenerate types
         run: python scripts/generate_types.py
 
-      - name: Check for uncommitted changes (generated code up-to-date)
-        run: git diff --exit-code
-
-      - name: Run tests
+      - name: Baseline. Run tests (include any validation and coverage)
         run: pytest -q
 
-      - name: Build sdist + wheel
+      - name: Deploy. Build sdist + wheel (exact version)
+        env:
+          SETUPTOOLS_SCM_PRETEND_VERSION: ${{ steps.ver.outputs.plain }}
         run: python -m build
 
-      - name: List artifacts
-        run: |
-          python - << 'PY'
-          import zipfile, glob, os
-          print("Dist files:", os.listdir("dist"))
-          for whl in glob.glob("dist/*.whl"):
-              with zipfile.ZipFile(whl) as z:
-                  names = z.namelist()
-                  print(" -", whl, ":", len(names), "files")
-          PY
+      - name: Deploy. List artifacts
+        run: python .github/scripts/list_artifacts.py
 
-      - name: Create GitHub Release + upload artifacts
+      - name: Deploy. Create GitHub Release, upload artifacts and set as latest
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}  # e.g., v0.1.4
           name: ${{ github.ref_name }}
           generate_release_notes: true
           files: |
@@ -65,43 +68,6 @@ jobs:
           prerelease: false
           make_latest: true
 
-      - name: Publish to PyPI (Trusted Publishing)
+      - name: Deploy. Publish to PyPI (Trusted Publishing)
         uses: pypa/gh-action-pypi-publish@release/v1
-
-  docs:
-    needs: build-and-release
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout with full history
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install docs deps
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[docs]"
-
-      - name: Configure git for mike
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Build docs (fail fast)
-        run: mkdocs build
-
-      - name: Deploy versioned docs with Mike
-        env:
-          TAG: ${{ github.ref_name }}   # e.g., v0.1.4
-        run: |
-          VERSION="${TAG#v}"
-          mike deploy --push --update-aliases latest "$VERSION"
-          mike set-default --push latest
 

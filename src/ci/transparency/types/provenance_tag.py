@@ -4,78 +4,112 @@ from __future__ import annotations
 from enum import Enum
 from typing import Annotated, Optional
 from pydantic import BaseModel, ConfigDict, Field
+
+
 class AcctAge(Enum):
-    field_0_7d = '0-7d'
-    field_8_30d = '8-30d'
-    field_1_6m = '1-6m'
-    field_6_24m = '6-24m'
-    field_24m_ = '24m+'
+    field_0_7d = "0-7d"
+    field_8_30d = "8-30d"
+    field_1_6m = "1-6m"
+    field_6_24m = "6-24m"
+    field_24m_ = "24m+"
+
+
 class AcctType(Enum):
-    person = 'person'
-    org = 'org'
-    media = 'media'
-    public_official = 'public_official'
-    unverified = 'unverified'
-    declared_automation = 'declared_automation'
+    person = "person"
+    org = "org"
+    media = "media"
+    public_official = "public_official"
+    unverified = "unverified"
+    declared_automation = "declared_automation"
+
+
 class AutomationFlag(Enum):
-    manual = 'manual'
-    scheduled = 'scheduled'
-    api_client = 'api_client'
-    declared_bot = 'declared_bot'
+    manual = "manual"
+    scheduled = "scheduled"
+    api_client = "api_client"
+    declared_bot = "declared_bot"
+
+
 class PostKind(Enum):
-    original = 'original'
-    reshare = 'reshare'
-    quote = 'quote'
-    reply = 'reply'
+    original = "original"
+    reshare = "reshare"
+    quote = "quote"
+    reply = "reply"
+
+
 class ClientFamily(Enum):
-    web = 'web'
-    mobile = 'mobile'
-    third_party_api = 'third_party_api'
+    web = "web"
+    mobile = "mobile"
+    third_party_api = "third_party_api"
+
+
 class MediaProvenance(Enum):
-    c2pa_present = 'c2pa_present'
-    hash_only = 'hash_only'
-    none = 'none'
+    c2pa_present = "c2pa_present"
+    hash_only = "hash_only"
+    none = "none"
+
+
 class ProvenanceTag(BaseModel):
     """
-    Per-post provenance tags in the Civic Transparency standard. Values are bucketed/categorical—no PII or direct identifiers.
+    Per-post provenance tags. Values are bucketed/categorical—no PII or direct identifiers.
     """
+
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
     )
     acct_age_bucket: Annotated[
-        AcctAge, Field(description='Account age bucket relative to post time.')
+        AcctAge,
+        Field(
+            description=(
+                "Account age bucketed for privacy: e.g., '0-7d', '8-30d', '1-6m',"
+                " '6-24m', '24m+'."
+            )
+        ),
     ]
-    acct_type: Annotated[AcctType, Field(description='Declared account type.')]
+    acct_type: Annotated[AcctType, Field(description="Declared identity account type.")]
     automation_flag: Annotated[
-        AutomationFlag, Field(description='Automation status or posting method.')
+        AutomationFlag,
+        Field(
+            description=(
+                "Posting method with clear boundaries: manual (direct user"
+                " interaction), scheduled (user-configured delayed posting), api_client"
+                " (third-party tools like Buffer/Hootsuite), declared_bot (automated"
+                " systems with explicit bot declaration)."
+            )
+        ),
     ]
     post_kind: Annotated[
-        PostKind, Field(description='Kind of post relative to original content.')
+        PostKind,
+        Field(description="Content relationship: original, reshare, quote, reply."),
     ]
     client_family: Annotated[
-        ClientFamily, Field(description='Broad class of client application.')
+        ClientFamily,
+        Field(description="Application class: web, mobile, third_party_api."),
     ]
     media_provenance: Annotated[
         MediaProvenance,
-        Field(description='Level of media provenance information attached.'),
+        Field(description="Embedded authenticity: c2pa_present, hash_only, none."),
+    ]
+    dedup_hash: Annotated[
+        str,
+        Field(
+            description=(
+                "Privacy-preserving rolling hash for duplicate detection (fixed 8 hex"
+                " characters, salted daily to prevent cross-dataset correlation)."
+            ),
+            max_length=8,
+            min_length=8,
+            pattern="^[a-f0-9]{8}$",
+        ),
     ]
     origin_hint: Annotated[
         Optional[str],
         Field(
             description=(
-                'Broad location bucket where content was first observed (if lawful).'
+                "Geographic origin limited to country-level (ISO country codes) or"
+                " major subdivisions only for populations >1M, e.g., 'US', 'US-CA',"
+                " where lawful."
             ),
-            pattern='^[A-Z]{2}(-[A-Z]{2})?$',
+            pattern="^[A-Z]{2}(-[A-Z0-9]{1,3})?$",
         ),
     ] = None
-    dedup_hash: Annotated[
-        str,
-        Field(
-            description=(
-                'Rolling hash identifier used to detect recycled/duplicate content.'
-            ),
-            max_length=64,
-            min_length=8,
-            pattern='^[a-f0-9]{8,64}$',
-        ),
-    ]

@@ -1,0 +1,10 @@
+{
+  "acct_age_bucket": "1-6m",
+  "acct_type": "person",
+  "automation_flag": "manual",
+  "post_kind": "original",
+  "client_family": "mobile",
+  "media_provenance": "hash_only",
+  "origin_hint": "US-CA",
+  "dedup_hash": "a1b2c3d4"
+}
