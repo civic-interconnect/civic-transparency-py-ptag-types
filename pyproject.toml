@@ -12,6 +12,7 @@ classifiers = [
 ]
 dependencies = [
   "pydantic>=2.6",
+  "civic-transparency-spec>=0.2.1,<0.3.0",
 ]
 description = "Typed Python models (Pydantic v2) for the Civic Transparency specification"
 dynamic = ["version"]
@@ -40,7 +41,6 @@ dev = [
   "jsonschema", 
   "openapi-spec-validator",
   "datamodel-code-generator",
-  "civic-transparency-spec>=0.2.1,<0.3.0",
 ]
 
 [project.urls]
