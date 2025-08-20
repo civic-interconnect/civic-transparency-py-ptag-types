@@ -14,9 +14,46 @@ permissions:
   id-token: write   # PyPI Trusted Publishing (OIDC)
 
 jobs:
+  # First job: Run the full CI suite
+  ci-validation:
+    name: Run CI validation before release
+    uses: ./.github/workflows/ci.yml
+    secrets: inherit
+
+  # Second job: Verify docs build correctly
+  docs-validation:
+    name: Verify documentation builds
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history with tags)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python and cache
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install ".[dev]"
+
+      - name: Build documentation
+        run: mkdocs build --strict
+        
+      - name: Verify API docs generate correctly
+        run: |
+          # Check that key documentation files were generated
+          [ -f "site/api/index.html" ] || { echo "API docs missing"; exit 1; }
+          [ -f "site/index.html" ] || { echo "Main docs missing"; exit 1; }
+          echo "Documentation built successfully"
+
+  # Third job: Only run if both CI and docs pass
   build-and-release:
     runs-on: ubuntu-latest
-
+    needs: [ci-validation, docs-validation]  
+    
     steps:
       - name: Checkout (full history with tags)
         uses: actions/checkout@v4
@@ -70,4 +107,3 @@ jobs:
 
       - name: Deploy. Publish to PyPI (Trusted Publishing)
         uses: pypa/gh-action-pypi-publish@release/v1
-

@@ -90,7 +90,7 @@ def create_provenance_tag() -> Dict[str, Any]:
         "client_family": "mobile",
         "media_provenance": "hash_only",
         "origin_hint": "US-CA",
-        "dedup_hash": "a1b2c3d4e5f6789a",
+        "dedup_hash": "a1b2c3d4",
     }
 
 
@@ -127,9 +127,9 @@ def benchmark_validation(
     std_time: float = statistics.stdev(times)
     records_per_sec = iterations / avg_time
 
-    print(f"  ⏱️  Average time: {avg_time:.4f}s (±{std_time:.4f}s)")
-    print(f"  🚀 Records/sec: {records_per_sec:,.0f}")
-    print(f"  📏 Time per record: {(avg_time / iterations) * 1000:.3f}ms")
+    print(f"  Average time: {avg_time:.4f}s (±{std_time:.4f}s)")
+    print(f"  Records/sec: {records_per_sec:,.0f}")
+    print(f"  Time per record: {(avg_time / iterations) * 1000:.3f}ms")
 
     return records_per_sec, obj
 
@@ -212,16 +212,16 @@ def measure_memory_usage(name: str, obj):
     total_memory = sum(stat.size for stat in top_stats)
     avg_per_object = total_memory / 1000
 
-    print(f"  🔍 sys.getsizeof(): {size:,} bytes")
-    print(f"  📊 Estimated per object: {avg_per_object:,.0f} bytes")
-    print(f"  📦 JSON size: {len(obj.model_dump_json()):,} bytes")
+    print(f"  sys.getsizeof(): {size:,} bytes")
+    print(f"  Estimated per object: {avg_per_object:,.0f} bytes")
+    print(f"  JSON size: {len(obj.model_dump_json()):,} bytes")
 
     return avg_per_object
 
 
 def main():
     """Run all benchmarks."""
-    print("🎯 Civic Transparency Types Performance Benchmark")
+    print("Civic Transparency Types Performance Benchmark")
     print("=" * 50)
     print(f"Python version: {sys.version}")
     print(f"orjson available: {has_orjson}")
@@ -283,7 +283,7 @@ def main():
     print(f"Series (minimal):  {minimal_mem:>8,.0f} bytes")
     print(f"Series (complex):  {complex_mem:>8,.0f} bytes")
 
-    print("\n✅ Benchmark complete!")
+    print("\nBenchmark complete!")
 
 
 if __name__ == "__main__":
