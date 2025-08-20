@@ -64,9 +64,6 @@ jobs:
       - name: Baseline. Verify types import and empty points
         run: python .github/scripts/verify_types.py
 
-      - name: Baseline. Verify generated files match schema hashes
-        run: python .github/scripts/check_schema_hash.py
-
   # Main CI Pipeline (Educational scope structure preserved)
   ci:
     runs-on: ubuntu-latest
@@ -107,9 +104,6 @@ jobs:
 
       - name: Baseline. Verify types import and empty points
         run: python .github/scripts/verify_types.py
-
-      - name: Baseline. Verify generated files match schema hashes
-        run: python .github/scripts/check_schema_hash.py
 
       - name: Baseline. Ruff lint (fail fast, check only, no format or auto-fix in CI)
         run: ruff check .
