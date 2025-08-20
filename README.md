@@ -93,7 +93,7 @@ tag = ProvenanceTag(
     post_kind="original",
     client_family="mobile",
     media_provenance="hash_only",
-    dedup_hash="a1b2c3d4e5f6"
+    dedup_hash="a1b2c3d4"
 )
 ```
 
@@ -147,7 +147,7 @@ This package follows the underlying specification versions:
 
 **Best Practice:** Pin to compatible major versions:
 ```bash
-pip install "civic-transparency-types>=1.0,<2.0"
+pip install "civic-transparency-types>=0.2.1,<1.0"
 ```
 
 The package automatically manages compatibility with the corresponding `civic-transparency-spec` version.

@@ -53,7 +53,8 @@ class TestExampleData:
         # Verify key properties
         assert tag.acct_type.value == "person"  # Compare enum value
         assert tag.automation_flag.value == "manual"  # Compare enum value
-        assert tag.origin_hint == "US-CA"
+        tag_dict = tag.model_dump()
+        assert tag_dict["origin_hint"] == "US-CA"
 
         # Round-trip test
         serialized = tag.model_dump()

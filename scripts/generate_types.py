@@ -1,110 +1,109 @@
 # scripts/generate_types.py
-from __future__ import annotations
-
 import subprocess
 import sys
-from importlib.resources import files, as_file
+import hashlib
 from pathlib import Path
+from importlib.resources import as_file, files
+from importlib.metadata import version as pkgver
 
-# Schemas come from the installed *spec* package
 SCHEMA_PKG = "ci.transparency.spec.schemas"
-
-# Output package for generated models (this repo)
 OUT_DIR = Path("src/ci/transparency/types")
 
-# Map input schema filename -> output module + root class name
-TARGETS = {
-    "series.schema.json": ("series.py", "Series"),
-    "provenance_tag.schema.json": ("provenance_tag.py", "ProvenanceTag"),
-}
 
+def _add_schema_header(file_path, schema_name):
+    """Add provenance header that pre-commit hooks expect."""
+    # Normalize line endings BEFORE calculating hash
+    _normalize_line_endings(file_path)
 
-def _ensure_init_exports(init_path: Path) -> None:
-    required_lines = [
-        "from .series import Series",
-        "from .provenance_tag import ProvenanceTag",
-        "from ._version import __version__  # noqa: F401",
-        "__all__ = ['Series', 'ProvenanceTag']",
-    ]
+    schema_file = files(SCHEMA_PKG) / schema_name
+    schema_text = schema_file.read_text()
+    schema_sha = hashlib.sha256(schema_text.encode("utf-8")).hexdigest()
+    spec_ver = pkgver("civic-transparency-spec")
 
-    existing = init_path.read_text(encoding="utf-8") if init_path.exists() else ""
-    lines = [ln.rstrip() for ln in existing.splitlines() if ln.strip()]
-
-    changed = False
-    for req in required_lines:
-        if not any(ln == req for ln in lines):
-            lines.append(req)
-            changed = True
-
-    new_text = "\n".join(lines) + ("\n" if lines else "")
-    if changed or existing != new_text:
-        init_path.write_text(new_text, encoding="utf-8")
-        print("Updated __init__.py exports")
-    else:
-        print("Keeping existing __init__.py (no changes)")
-
-
-def _run(cmd: list[str]) -> None:
-    print(">", " ".join(cmd))
-    subprocess.check_call(cmd)
-
-
-def _strip_unused_rootmodel(import_file: Path) -> None:
-    """Remove `RootModel` from `from pydantic import ...` if not used elsewhere."""
-    text = import_file.read_text(encoding="utf-8")
-    # If it's not present, nothing to do
-    if "RootModel" not in text:
-        return
-    # If the *only* occurrence is the import line, we can safely drop it
-    lines = text.splitlines()
-    joined_without_import = "\n".join(
-        ln
-        for ln in lines
-        if not (ln.startswith("from pydantic import") and "RootModel" in ln)
+    content = file_path.read_text()
+    header = (
+        "# AUTO-GENERATED: do not edit by hand\n"
+        f"# source-schema: {schema_name}\n"
+        f"# schema-sha256: {schema_sha}\n"
+        f"# spec-version: {spec_ver}\n"
     )
-    if "RootModel" in joined_without_import:
-        # It's used somewhere else; keep it.
-        return
-
-    # Rewrite the import line, removing RootModel token
-    new_lines: list[str] = []
-    for ln in lines:
-        if ln.startswith("from pydantic import") and "RootModel" in ln:
-            # split imports, drop the token, rejoin cleanly
-            head, tail = ln.split("import", 1)
-            parts = [p.strip() for p in tail.split(",")]
-            parts = [p for p in parts if p != "RootModel"]
-            # Only rewrite if anything remains
-            if parts:
-                ln = f"{head}import {', '.join(parts)}"
-            else:
-                # If nothing remains, drop the entire line
-                ln = ""
-        new_lines.append(ln)
-    import_file.write_text(
-        "\n".join([line for line in new_lines if line.strip()]), encoding="utf-8"
-    )
+    file_path.write_text(header + content)
+    _normalize_line_endings(file_path)
+    print(f"Added schema header to {file_path.name}")
 
 
-def main() -> int:
+def _fix_points_field(series_file):
+    """Replace the multi-line points Field with default_factory=list."""
+    content: str = series_file.read_text()
+    lines: list[str] = content.splitlines()
+
+    # Find the start of the points field
+    points_start = None
+    for i, line in enumerate(lines):
+        if "points: List[Point] = Field(" in line:
+            points_start = i
+            break
+
+    if points_start is None:
+        print("ERROR: Points field not found")
+        return False
+
+    # Find the end of the Field definition
+    paren_count = 0
+    points_end = points_start
+    for i in range(points_start, len(lines)):
+        line = lines[i]
+        paren_count += line.count("(") - line.count(")")
+        if paren_count == 0 and i > points_start:
+            points_end = i
+            break
+
+    print(f"Replacing points field (lines {points_start + 1}-{points_end + 1})")
+
+    # Get indentation from original line
+    original_line = lines[points_start]
+    indent = len(original_line) - len(original_line.lstrip())
+    indentation = " " * indent
+
+    # Replace with simple default_factory version
+    new_line = f"{indentation}points: List[Point] = Field(default_factory=list)"
+
+    # Build new content
+    new_lines = lines[:points_start] + [new_line] + lines[points_end + 1 :]
+
+    series_file.write_text("\n".join(new_lines))
+    print("Fixed points field")
+    return True
+
+
+def _normalize_line_endings(file_path):
+    """Convert CRLF to LF to match what ruff expects."""
+    content = file_path.read_bytes()
+    if b"\r\n" in content:
+        content = content.replace(b"\r\n", b"\n")
+        file_path.write_bytes(content)
+        print(f"Normalized line endings in {file_path.name}")
+
+
+def _rename_seriesdoc_to_series(series_file):
+    """Rename SeriesDoc class to Series for cleaner Python API."""
+    content = series_file.read_text()
+    content = content.replace("class SeriesDoc(", "class Series(")
+    series_file.write_text(content)
+    print("Renamed SeriesDoc to Series")
+
+
+def main():
+    print("Generating types...")
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    # ensure package init exists before writes
-    (OUT_DIR / "__init__.py").touch(exist_ok=True)
-
-    for schema_name, (out_py, root_class) in TARGETS.items():
-        # Locate resource inside installed package
-        res = files(SCHEMA_PKG).joinpath(schema_name)
-        if not res.is_file():
-            print(
-                f"ERROR: schema not found in package {SCHEMA_PKG}: {schema_name}",
-                file=sys.stderr,
-            )
-            return 1
-
-        # Make sure we pass a real filesystem path to the generator
-        with as_file(res) as schema_path:
-            out_path = OUT_DIR / out_py
+    # Generate each file
+    for schema_file, py_file in [
+        ("series.schema.json", "series.py"),
+        ("provenance_tag.schema.json", "provenance_tag.py"),
+    ]:
+        print(f"Generating {py_file}...")
+        with as_file(files(SCHEMA_PKG) / schema_file) as schema_path:
             cmd = [
                 sys.executable,
                 "-m",
@@ -114,27 +113,54 @@ def main() -> int:
                 "--input-file-type",
                 "jsonschema",
                 "--output",
-                str(out_path),
+                str(OUT_DIR / py_file),
                 "--output-model-type",
                 "pydantic_v2.BaseModel",
                 "--target-python-version",
                 "3.11",
-                "--class-name",
-                root_class,
-                "--disable-timestamp",  # reproducible output
-                "--use-schema-description",  # carry descriptions to Field(..., description=)
-                "--collapse-root-models",  # nicer one-class roots
-                "--wrap-string-literal",  # readable long literals
-                "--use-annotated",  # use Annotated for constraints
+                "--disable-timestamp",
             ]
-            _run(cmd)
-            _strip_unused_rootmodel(out_path)
+            subprocess.run(cmd, check=True)
 
-    # Export friendly names
-    init_path = OUT_DIR / "__init__.py"
-    _ensure_init_exports(init_path)
-    return 0
+        # Post-process Python files
+        file_path = OUT_DIR / py_file
+        if py_file == "series.py":
+            _fix_points_field(file_path)
+            _rename_seriesdoc_to_series(file_path)
+
+        _add_schema_header(file_path, schema_file)
+
+    series_file = OUT_DIR / "series.py"
+    series_content = series_file.read_text()
+
+    # Check what classes exist
+    available_classes = []
+    imports = []
+
+    if "class Series(" in series_content:
+        available_classes.append("Series")
+        imports.append("from .series import Series")
+
+    if "class Interval(" in series_content:
+        available_classes.append("Interval")
+        imports.append("from .series import Interval")
+
+    provenance_file = OUT_DIR / "provenance_tag.py"
+    if provenance_file.exists():
+        provenance_content = provenance_file.read_text()
+        if "class ProvenanceTag(" in provenance_content:
+            available_classes.append("ProvenanceTag")
+            imports.append("from .provenance_tag import ProvenanceTag")
+
+    # Write __init__.py with actual available classes
+    init_content = "\n".join(imports) + "\n"
+    init_content += "from ._version import __version__  # noqa: F401\n"
+    init_content += f"__all__ = {available_classes!r}\n"
+    (OUT_DIR / "__init__.py").write_text(init_content)
+    print(f"Updated __init__.py to export: {available_classes}")
+
+    print("Generation complete.")
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()

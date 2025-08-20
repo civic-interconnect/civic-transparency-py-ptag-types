@@ -19,7 +19,6 @@ name: Civic Transparency Types CI (Build Types, Lint, Test, Coverage)
 # - Coverage: Generate reports and upload artifacts
 # - Deploy: Build package and docs (sanity checks for release readiness)
 
-
 on:
   push:
     branches: [ main ]
@@ -27,13 +26,21 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+env:
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  PYTHONUNBUFFERED: "1"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   compatibility-matrix:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
-      fail-fast: false  # Continue testing other Python versions
+      fail-fast: false
 
     steps:
       - name: Checkout (full history)
@@ -52,75 +59,24 @@ jobs:
           pip install ".[dev]"
 
       - name: Baseline. Verify version compatibility
-        run: |
-          python -c "
-          try:
-              import ci.transparency.spec
-              import ci.transparency.types
-              print(f'Spec version: {getattr(ci.transparency.spec, \"__version__\", \"unknown\")}')
-              print(f'Types version: {getattr(ci.transparency.types, \"__version__\", \"dev\")}')
-          except Exception as e:
-              print(f'Version check failed: {e}')
-              exit(1)
-          "
+        run: python .github/scripts/check_version_compatibility.py
 
-      - name: Baseline. Verify generated types exist and are valid
-        run: |
-          # Check that required generated files exist
-          if [ ! -f "src/ci/transparency/types/series.py" ] || [ ! -f "src/ci/transparency/types/provenance_tag.py" ]; then
-            echo 'ERROR: Generated type files are missing!'
-            echo 'Run locally:'
-            echo '  python scripts/generate_types.py'
-            echo '  git add src/ci/transparency/types/'
-            echo '  git commit -m "Add generated types"'
-            exit 1
-          fi
+      - name: Baseline. Verify types import and empty points
+        run: python .github/scripts/verify_types.py
 
-      - name: Baseline. Verify types can be imported and used.
-        run: |
-          python -c "
-          from ci.transparency.types import Series, ProvenanceTag
-          from datetime import datetime
-          
-          # Test ProvenanceTag validation (fixed hash length)
-          tag = ProvenanceTag(
-              acct_age_bucket='1-6m',
-              acct_type='person',
-              automation_flag='manual',
-              post_kind='original',
-              client_family='mobile',
-              media_provenance='hash_only',
-              dedup_hash='a1b2c3d4'
-          )
-          print('ProvenanceTag validation works')
-          
-          # Test Series validation
-          series = Series(
-              topic='#CompatibilityTest',
-              generated_at=datetime.now().isoformat() + 'Z',
-              interval='minute',
-              points=[]
-          )
-          print('Series validation works')
-          
-          # Test JSON serialization
-          tag_json = tag.model_dump_json()
-          series_json = series.model_dump_json()
-          print('JSON serialization works')
-          
-          print(f'Compatibility verified: Python ${{ matrix.python-version }} + Spec ${{ matrix.spec-version }}')
-          "
+      - name: Baseline. Verify generated files match schema hashes
+        run: python .github/scripts/check_schema_hash.py
 
   # Main CI Pipeline (Educational scope structure preserved)
   ci:
     runs-on: ubuntu-latest
-    needs: compatibility-matrix  # Wait for compatibility verification
+    needs: compatibility-matrix
     strategy:
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
 
     steps:
-      - name: Checkout (full history with tags) 
+      - name: Checkout (full history with tags)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -135,13 +91,11 @@ jobs:
         run: |
           pip install ".[dev]"
 
-      - name: Assemble. Verify version compatibility
-        run: |
-          python .github/scripts/check_version_compatibility.py
+      - name: Baseline. Verify version compatibility
+        run: python .github/scripts/check_version_compatibility.py
 
       - name: Baseline. Verify committed types exist and are valid
         run: |
-          # Check that required generated files exist
           if [ ! -f "src/ci/transparency/types/series.py" ] || [ ! -f "src/ci/transparency/types/provenance_tag.py" ]; then
             echo 'ERROR: Generated type files are missing!'
             echo 'Run locally:'
@@ -150,12 +104,12 @@ jobs:
             echo '  git commit -m "Add generated types"'
             exit 1
           fi
-          
-          # Basic validation that the types can be imported and used
-          python -c "
-          from ci.transparency.types import Series, ProvenanceTag
-          print('PASS: Generated types are valid and importable')
-          "
+
+      - name: Baseline. Verify types import and empty points
+        run: python .github/scripts/verify_types.py
+
+      - name: Baseline. Verify generated files match schema hashes
+        run: python .github/scripts/check_schema_hash.py
 
       - name: Baseline. Ruff lint (fail fast, check only, no format or auto-fix in CI)
         run: ruff check .
@@ -182,7 +136,7 @@ jobs:
         run: python -m build
 
       - name: Deploy. Build docs (sanity check)
-        run: mkdocs build
+        run: mkdocs build --strict
 
   # Performance monitoring (runs only on main branch)
   performance:
@@ -219,18 +173,18 @@ jobs:
           python -c "
           with open('performance_results.txt') as f:
               content = f.read()
-              
+
           import re
           provenance_rps = re.search(r'ProvenanceTag:\s+([0-9,]+) records/sec', content)
           series_rps = re.search(r'Series \(minimal\):\s+([0-9,]+) records/sec', content)
-          
+
           if provenance_rps:
               rps = int(provenance_rps.group(1).replace(',', ''))
               if rps < 100000:
                   print(f'WARNING: ProvenanceTag performance regression: {rps:,}/sec')
               else:
                   print(f'PASS: ProvenanceTag performance: {rps:,}/sec')
-                  
+
           if series_rps:
               rps = int(series_rps.group(1).replace(',', ''))
               if rps < 20000:

@@ -1,175 +1,153 @@
 #!/usr/bin/env python3
 """
-Version compatibility checking for civic transparency types.
-Works in both pre-commit and CI environments.
+Version/spec compatibility check for civic-transparency-types.
+
+- Verifies the installed civic-transparency-spec satisfies pyproject's requirement
+- Asserts series.schema.json allows empty points (minItems == 0)
+- Asserts generated Series.points uses default_factory=list
+- Prints import origins to catch shadowed installs
 """
 
+from __future__ import annotations
+
+import json
 import sys
 from pathlib import Path
-from typing import Optional
+from packaging.requirements import Requirement
+from packaging.version import Version
 
-# Add src to path so we can import from development installation
-repo_root = Path(__file__).parent.parent.parent
-src_path = repo_root / "src"
-if src_path.exists():
-    sys.path.insert(0, str(src_path))
+# Prefer installed packages; fall back to repo src for dev
+REPO_ROOT = Path(__file__).resolve().parents[2]
+SRC_PATH = REPO_ROOT / "src"
 
 try:
-    import tomllib
-except ImportError:
-    try:
-        import tomli as tomllib
-    except ImportError:
-        print("ERROR: Neither tomllib nor tomli available")
-        sys.exit(1)
+    from importlib.metadata import PackageNotFoundError, version
+except Exception:  # pragma: no cover
+    from importlib_metadata import PackageNotFoundError, version  # type: ignore
+
+try:
+    import tomllib  # py311+
+except Exception:  # pragma: no cover
+    import tomli as tomllib  # type: ignore
 
 
-def get_types_version():
-    """Get the current types package version."""
-    try:
-        from ci.transparency.types import __version__
+def _load_pyproject() -> dict:
+    p = REPO_ROOT / "pyproject.toml"
+    with p.open("rb") as f:
+        return tomllib.load(f)
 
-        return __version__
-    except ImportError:
-        # Try importlib.metadata if package is installed
+
+def _find_spec_requirement(pyproj: dict) -> Requirement | None:
+    # Search [project].dependencies first
+    for dep in pyproj.get("project", {}).get("dependencies", []):
         try:
-            from importlib.metadata import version
-
-            return version("civic-transparency-types")
-        except ImportError:
-            try:
-                import pkg_resources
-
-                return pkg_resources.get_distribution(
-                    "civic-transparency-types"
-                ).version
-            except Exception:
-                pass
+            req = Requirement(dep)
         except Exception:
-            pass
-
-        print("INFO: civic-transparency-types not installed (using development mode)")
-        return "dev"
-
-
-def get_installed_spec_version() -> Optional[str]:
-    """Get the currently installed spec version."""
-    try:
-        import ci.transparency.spec
-
-        # Try multiple ways to get version
-        if hasattr(ci.transparency.spec, "__version__"):
-            return ci.transparency.spec.__version__
-
-        # Try importlib.metadata (modern Python)
+            continue
+        if req.name == "civic-transparency-spec":
+            return req
+    # Also allow a pinned dev override in optional deps
+    for dep in (
+        pyproj.get("project", {}).get("optional-dependencies", {}).get("dev", [])
+    ):
         try:
-            from importlib.metadata import version
-
-            return version("civic-transparency-spec")
-        except ImportError:
-            # Fallback for older Python
-            try:
-                import pkg_resources
-
-                return pkg_resources.get_distribution("civic-transparency-spec").version
-            except Exception:
-                pass
-
-        # Try reading _version.py directly
-        try:
-            from ci.transparency.spec._version import __version__
-
-            return __version__
-        except ImportError:
-            pass
-
-        print("INFO: civic-transparency-spec installed but version not accessible")
-        return "unknown"
-
-    except ImportError:
-        return None
-
-
-def get_declared_spec_version():
-    """Get spec version from pyproject.toml if explicitly pinned."""
-    pyproject_path = repo_root / "pyproject.toml"
-    if not pyproject_path.exists():
-        return None
-
-    try:
-        with open(pyproject_path, "rb") as f:
-            data = tomllib.load(f)
-    except Exception:
-        return None
-
-    dev_deps = data.get("project", {}).get("optional-dependencies", {}).get("dev", [])
-
-    for dep in dev_deps:
-        if dep.startswith("civic-transparency-spec=="):
-            return dep.split("==")[1]
-
+            req = Requirement(dep)
+        except Exception:
+            continue
+        if req.name == "civic-transparency-spec":
+            return req
     return None
 
 
-def main():
-    """Check version compatibility."""
-    print("Checking version compatibility...")
+def _get_installed(name: str) -> str | None:
+    try:
+        return version(name)
+    except PackageNotFoundError:
+        return None
 
-    types_ver = get_types_version()
-    spec_ver = get_installed_spec_version()
-    declared_spec_ver = get_declared_spec_version()
 
-    print(f"Types version: {types_ver}")
+def _assert_schema_invariant() -> None:
+    # Load series.schema.json from the installed spec package
+    from importlib.resources import files
 
-    if not spec_ver:
-        print("ERROR: civic-transparency-spec not installed")
-        if declared_spec_ver:
-            print(f"   Run: pip install civic-transparency-spec=={declared_spec_ver}")
-        else:
-            print("   Run: pip install 'civic-transparency-spec>=0.2.0'")
-        return 1
-
-    print(f"Installed spec version: {spec_ver}")
-    if declared_spec_ver:
-        print(f"Declared spec version: {declared_spec_ver}")
-
-    # Check if declared version matches installed (if declared)
-    if declared_spec_ver and declared_spec_ver != spec_ver:
-        print(
-            f"FAIL: Declared spec version ({declared_spec_ver}) != installed ({spec_ver})"
+    try:
+        text = (
+            files("ci.transparency.spec.schemas") / "series.schema.json"
+        ).read_text()
+    except Exception as e:
+        raise SystemExit(
+            f"FAIL: could not load series.schema.json from spec package: {e}"
         )
-        print(f"   Run: pip install civic-transparency-spec=={declared_spec_ver}")
+
+    try:
+        schema = json.loads(text)
+        min_items = schema["properties"]["points"].get("minItems", 0)
+    except Exception as e:
+        raise SystemExit(f"FAIL: series.schema.json malformed: {e}")
+
+    if min_items != 0:
+        raise SystemExit(
+            f"FAIL: Spec invariant violated: points.minItems={min_items!r} (expected 0 or absent). "
+            "Update civic-transparency-spec to a version that permits empty points."
+        )
+
+    print("Spec invariant OK: points.minItems == 0")
+
+
+def _assert_types_points_default_factory() -> None:
+    # Try import installed first; then fall back to src for dev mode
+    try:
+        import ci.transparency.types as types  # type: ignore
+    except ImportError:
+        sys.path.insert(0, str(SRC_PATH))
+        import ci.transparency.types as types  # type: ignore
+
+    print(f"types imported from: {getattr(types, '__file__', 'unknown')}")
+    fld = types.Series.model_fields["points"]
+    if fld.default_factory is None:
+        raise SystemExit(
+            "FAIL: Series.points has no default_factory=list. "
+            "Regenerate models to allow empty arrays."
+        )
+    print("Types invariant OK: Series.points uses default_factory=list")
+
+
+def main() -> int:
+    print("Checking civic-transparency types/spec compatibility…")
+
+    pyproj = _load_pyproject()
+    req = _find_spec_requirement(pyproj)
+    if not req:
+        print("WARN: No civic-transparency-spec requirement found in pyproject.toml")
+    else:
+        print(f"Declared spec requirement: {req}")
+
+    spec_ver = _get_installed("civic-transparency-spec")
+    if not spec_ver:
+        print(
+            "FAIL: civic-transparency-spec is not installed. "
+            "Install dev deps: pip install -e '.[dev]'"
+        )
         return 1
+    print(f"Installed spec version: {spec_ver}")
 
-    # For development mode, be more permissive
-    if types_ver == "dev" or "dev" in types_ver:
-        if spec_ver:
-            print("PASS: Development mode with spec installed")
-            return 0
+    # If a requirement is declared, ensure the installed version satisfies it.
+    if req:
+        if not req.specifier.contains(Version(spec_ver), prereleases=True):
+            print(
+                f"FAIL: Installed spec {spec_ver} does not satisfy requirement '{req.specifier}'"
+            )
+            return 1
 
-    # Simple major.minor compatibility check for release versions
-    if types_ver != "dev" and spec_ver and "dev" not in types_ver:
-        try:
-            types_parts = [int(x) for x in types_ver.split(".dev")[0].split(".")]
-            spec_parts = [int(x) for x in spec_ver.split(".dev")[0].split(".")]
+    # Schema invariant (empty points allowed)
+    _assert_schema_invariant()
 
-            if len(types_parts) >= 2 and len(spec_parts) >= 2:
-                if types_parts[0] == spec_parts[0] and types_parts[1] == spec_parts[1]:
-                    print("PASS: Versions are compatible")
-                    return 0
-                else:
-                    print(
-                        f"FAIL: Version incompatibility - Types {types_ver} vs Spec {spec_ver}"
-                    )
-                    print("   Consider tagging repository to match spec version:")
-                    print(f"   git tag v{spec_ver} -m 'Release {spec_ver}'")
-                    return 1
-        except (ValueError, IndexError):
-            pass
+    # Types invariant (generated model accepts empty points)
+    _assert_types_points_default_factory()
 
-    print("PASS: Basic compatibility check passed")
+    print("PASS: versions and invariants look good.")
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())

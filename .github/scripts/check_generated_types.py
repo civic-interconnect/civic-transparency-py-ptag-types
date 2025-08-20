@@ -9,7 +9,7 @@ import subprocess
 import tempfile
 import shutil
 from pathlib import Path
-from typing import Union, List
+from typing import Union
 import filecmp
 
 
@@ -30,13 +30,13 @@ def compare_directories(dir1: Union[str, Path], dir2: Union[str, Path]) -> bool:
     def compare_files(dcmp: filecmp.dircmp):
         # Filter out _version.py files from comparison
         left_only_filtered = [
-            f for f in dcmp.left_only if isinstance(f, str) and f != "_version.py"
+            str(f) for f in list(dcmp.left_only) if str(f) != "_version.py"
         ]
         right_only_filtered = [
-            f for f in dcmp.right_only if isinstance(f, str) and f != "_version.py"
+            str(f) for f in list(dcmp.right_only) if str(f) != "_version.py"
         ]
         diff_files_filtered = [
-            f for f in dcmp.diff_files if isinstance(f, str) and f != "_version.py"
+            str(f) for f in list(dcmp.diff_files) if str(f) != "_version.py"
         ]
 
         if left_only_filtered or right_only_filtered or diff_files_filtered:
@@ -51,13 +51,13 @@ def compare_directories(dir1: Union[str, Path], dir2: Union[str, Path]) -> bool:
     return compare_files(dcmp)
 
 
-def get_file_differences(dir1: Union[str, Path], dir2: Union[str, Path]) -> List[str]:
+def get_file_differences(dir1: str | Path, dir2: str | Path) -> list[str]:
     """Get a list of differences between directories."""
     import filecmp
 
     differences = []
 
-    def collect_diffs(dcmp: filecmp.dircmp, path: str = ""):
+    def collect_diffs(dcmp, path: str = ""):
         for name in dcmp.left_only:
             differences.append(f"Only in current: {path}/{str(name)}")
         for name in dcmp.right_only:

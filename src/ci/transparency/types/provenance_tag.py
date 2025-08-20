@@ -14,89 +14,89 @@ from pydantic import BaseModel, ConfigDict, Field, RootModel, constr
 
 
 class AcctAge(Enum):
-    field_0_7d = '0-7d'
-    field_8_30d = '8-30d'
-    field_1_6m = '1-6m'
-    field_6_24m = '6-24m'
-    field_24m_ = '24m+'
+    field_0_7d = "0-7d"
+    field_8_30d = "8-30d"
+    field_1_6m = "1-6m"
+    field_6_24m = "6-24m"
+    field_24m_ = "24m+"
 
 
 class AcctType(Enum):
-    person = 'person'
-    org = 'org'
-    media = 'media'
-    public_official = 'public_official'
-    unverified = 'unverified'
-    declared_automation = 'declared_automation'
+    person = "person"
+    org = "org"
+    media = "media"
+    public_official = "public_official"
+    unverified = "unverified"
+    declared_automation = "declared_automation"
 
 
 class AutomationFlag(Enum):
-    manual = 'manual'
-    scheduled = 'scheduled'
-    api_client = 'api_client'
-    declared_bot = 'declared_bot'
+    manual = "manual"
+    scheduled = "scheduled"
+    api_client = "api_client"
+    declared_bot = "declared_bot"
 
 
 class PostKind(Enum):
-    original = 'original'
-    reshare = 'reshare'
-    quote = 'quote'
-    reply = 'reply'
+    original = "original"
+    reshare = "reshare"
+    quote = "quote"
+    reply = "reply"
 
 
 class ClientFamily(Enum):
-    web = 'web'
-    mobile = 'mobile'
-    third_party_api = 'third_party_api'
+    web = "web"
+    mobile = "mobile"
+    third_party_api = "third_party_api"
 
 
 class MediaProvenance(Enum):
-    c2pa_present = 'c2pa_present'
-    hash_only = 'hash_only'
-    none = 'none'
+    c2pa_present = "c2pa_present"
+    hash_only = "hash_only"
+    none = "none"
 
 
 class ISO3166CountryOrSubdivision(
-    RootModel[constr(pattern=r'^[A-Z]{2}(-[A-Z0-9]{1,3})?$')]
+    RootModel[constr(pattern=r"^[A-Z]{2}(-[A-Z0-9]{1,3})?$")]
 ):
-    root: constr(pattern=r'^[A-Z]{2}(-[A-Z0-9]{1,3})?$') = Field(
+    root: constr(pattern=r"^[A-Z]{2}(-[A-Z0-9]{1,3})?$") = Field(
         ...,
-        description='Uppercase ISO-3166-1 alpha-2 country code, optionally with ISO-3166-2 subdivision (e.g., US or US-CA).',
+        description="Uppercase ISO-3166-1 alpha-2 country code, optionally with ISO-3166-2 subdivision (e.g., US or US-CA).",
     )
 
 
-class HexHash8(RootModel[constr(pattern=r'^[a-f0-9]{8}$', min_length=8, max_length=8)]):
-    root: constr(pattern=r'^[a-f0-9]{8}$', min_length=8, max_length=8) = Field(
+class HexHash8(RootModel[constr(pattern=r"^[a-f0-9]{8}$", min_length=8, max_length=8)]):
+    root: constr(pattern=r"^[a-f0-9]{8}$", min_length=8, max_length=8) = Field(
         ...,
-        description='Fixed 8-character lowercase hex hash (privacy-preserving, daily salted).',
+        description="Fixed 8-character lowercase hex hash (privacy-preserving, daily salted).",
     )
 
 
 class ProvenanceTag(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
     )
     acct_age_bucket: AcctAge = Field(
         ...,
         description="Account age bucketed for privacy: e.g., '0-7d', '8-30d', '1-6m', '6-24m', '24m+'.",
     )
-    acct_type: AcctType = Field(..., description='Declared identity account type.')
+    acct_type: AcctType = Field(..., description="Declared identity account type.")
     automation_flag: AutomationFlag = Field(
         ...,
-        description='Posting method with clear boundaries: manual (direct user interaction), scheduled (user-configured delayed posting), api_client (third-party tools like Buffer/Hootsuite), declared_bot (automated systems with explicit bot declaration).',
+        description="Posting method with clear boundaries: manual (direct user interaction), scheduled (user-configured delayed posting), api_client (third-party tools like Buffer/Hootsuite), declared_bot (automated systems with explicit bot declaration).",
     )
     post_kind: PostKind = Field(
-        ..., description='Content relationship: original, reshare, quote, reply.'
+        ..., description="Content relationship: original, reshare, quote, reply."
     )
     client_family: ClientFamily = Field(
-        ..., description='Application class: web, mobile, third_party_api.'
+        ..., description="Application class: web, mobile, third_party_api."
     )
     media_provenance: MediaProvenance = Field(
-        ..., description='Embedded authenticity: c2pa_present, hash_only, none.'
+        ..., description="Embedded authenticity: c2pa_present, hash_only, none."
     )
     dedup_hash: HexHash8 = Field(
         ...,
-        description='Privacy-preserving rolling hash for duplicate detection (fixed 8 hex characters, salted daily to prevent cross-dataset correlation).',
+        description="Privacy-preserving rolling hash for duplicate detection (fixed 8 hex characters, salted daily to prevent cross-dataset correlation).",
     )
     origin_hint: Optional[ISO3166CountryOrSubdivision] = Field(
         None,

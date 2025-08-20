@@ -84,16 +84,21 @@ git add src/ci/transparency/types/
 
 ## DEV 2. Validate Changes
 
-1. Generate types first in case schema changed.
-2. Add generated changes to git.
-3. Commit updated types to git. 
-4. Fix code formatting and linting.
-5. Run precommit checks.
-6. Build documentation to test.
-7. Run tests.
+1. Pull from the GitHub repo.
+2. Purge the pip cache.
+3. Install packages.
+4. Generate types in case schema changed.
+5. Add generated changes to git.
+6. Commit updated types to git. 
+7. Format and lint.
+8. Run precommit checks.
+9. Build documentation to test.
+10. Run tests.
 
 ```shell
 git pull
+pip cache purge
+pip install ".[dev]"
 py scripts\generate_types.py
 git add src/ci/transparency/types/
 git commit -m "Update generated types"

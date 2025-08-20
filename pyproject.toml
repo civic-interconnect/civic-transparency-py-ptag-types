@@ -11,6 +11,7 @@ classifiers = [
   "Topic :: Software Development :: Libraries",
 ]
 dependencies = [
+  "packaging>=24.0",
   "pydantic>=2.6",
   "civic-transparency-spec>=0.2.1,<0.3.0",
 ]
@@ -79,5 +80,10 @@ local_scheme = "no-local-version"
 version_scheme = "guess-next-dev"
 write_to = "src/ci/transparency/types/_version.py"
 
+[tool.ruff]
+exclude = [
+    "src/ci/transparency/types/*.py",  # Ignore all generated types
+]
+
 [tool.ruff.lint.per-file-ignores]
-"src/ci/transparency/types/*.py" = ["F401"]
+"src/ci/transparency/types/*.py" = ["F401"] # generated models may have unused imports

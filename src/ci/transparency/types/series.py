@@ -15,7 +15,7 @@ from pydantic import BaseModel, ConfigDict, Field, RootModel, confloat, conint, 
 
 
 class Interval(Enum):
-    minute = 'minute'
+    minute = "minute"
 
 
 class Probability(RootModel[confloat(ge=0.0, le=1.0)]):
@@ -24,60 +24,60 @@ class Probability(RootModel[confloat(ge=0.0, le=1.0)]):
 
 class CoordinationSignals(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
     )
-    burst_score: Probability = Field(..., description='Burstiness indicator (0-1).')
+    burst_score: Probability = Field(..., description="Burstiness indicator (0-1).")
     synchrony_index: Probability = Field(
-        ..., description='Temporal synchrony indicator (0-1).'
+        ..., description="Temporal synchrony indicator (0-1)."
     )
     duplication_clusters: conint(ge=0) = Field(
-        ..., description='Count of duplicate/near-duplicate content clusters.'
+        ..., description="Count of duplicate/near-duplicate content clusters."
     )
 
 
 class Point(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
     )
     ts: datetime = Field(
-        ..., description='UTC minute boundary for this point (ISO 8601).'
+        ..., description="UTC minute boundary for this point (ISO 8601)."
     )
     volume: conint(ge=0) = Field(
-        ..., description='Total posts observed in this interval.'
+        ..., description="Total posts observed in this interval."
     )
     reshare_ratio: Probability = Field(
-        ..., description='Fraction of posts that are reshares in this interval.'
+        ..., description="Fraction of posts that are reshares in this interval."
     )
     recycled_content_rate: Probability = Field(
         ...,
-        description='Estimated fraction of posts that recycle prior content (hash/duplicate-based).',
+        description="Estimated fraction of posts that recycle prior content (hash/duplicate-based).",
     )
     acct_age_mix: Dict[str, Probability] = Field(
         ...,
-        description='Distribution over account-age buckets; values typically sum to ~1.0.',
+        description="Distribution over account-age buckets; values typically sum to ~1.0.",
     )
     automation_mix: Dict[str, Probability] = Field(
         ...,
-        description='Distribution over automation flags; values typically sum to ~1.0.',
+        description="Distribution over automation flags; values typically sum to ~1.0.",
     )
     client_mix: Dict[str, Probability] = Field(
         ...,
-        description='Distribution over client families; values typically sum to ~1.0.',
+        description="Distribution over client families; values typically sum to ~1.0.",
     )
     coordination_signals: CoordinationSignals = Field(
-        ..., description='Per-interval coordination indicators.'
+        ..., description="Per-interval coordination indicators."
     )
 
 
 class Series(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
     )
     topic: constr(min_length=1) = Field(
-        ..., description='Topic key (e.g., hashtag) this series describes.'
+        ..., description="Topic key (e.g., hashtag) this series describes."
     )
     generated_at: datetime = Field(
-        ..., description='UTC timestamp when this series was generated (ISO 8601).'
+        ..., description="UTC timestamp when this series was generated (ISO 8601)."
     )
-    interval: Interval = Field(..., description='Aggregation interval.')
+    interval: Interval = Field(..., description="Aggregation interval.")
     points: List[Point] = Field(default_factory=list)
