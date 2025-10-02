@@ -2,6 +2,7 @@
 
 [![CI Status](https://github.com/civic-interconnect/civic-transparency-py-ptag-types/actions/workflows/ci.yml/badge.svg)](https://github.com/civic-interconnect/civic-transparency-py-ptag-types/actions/workflows/ci.yml)
 [![Docs: latest](https://img.shields.io/badge/docs-latest-brightgreen.svg)](https://civic-interconnect.github.io/civic-transparency-py-ptag-types/)
+[![PyPI version](https://img.shields.io/pypi/v/civic-transparency-ptag-types.svg)](https://pypi.org/project/civic-transparency-ptag-types/)
 [![Security: bandit](https://img.shields.io/badge/security-bandit-yellow.svg)](https://github.com/PyCQA/bandit)
 [![Python: 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/downloads/release/python-3120/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
