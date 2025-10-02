@@ -146,7 +146,7 @@ uv run ruff format .
 pre-commit run --all-files
 uv run pyright
 uv run pytest
-uv run mkdocs build
+uv run mkdocs build --strict
 uv build
 ```
 
