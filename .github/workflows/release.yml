@@ -130,7 +130,7 @@ jobs:
           WANT="${{ steps.ver.outputs.plain }}"
           WHEEL="$(ls dist/*.whl | head -n1)"
           echo "Wheel: ${WHEEL}"
-          HAVE="$(python -c "import glob,re; w=sorted(glob.glob('dist/*.whl'))[0]; m=re.search(r'civic[_-]transparency[_-]types-([0-9][^-]*)-py', w); print(m.group(1) if m else '')")"
+          HAVE="$(python -c "import glob,re; w=sorted(glob.glob('dist/*.whl'))[0]; m=re.search(r'-([0-9]+\.[0-9]+\.[0-9]+[^-]*)-py', w); print(m.group(1) if m else '')")"
           if [ "${HAVE}" != "${WANT}" ]; then
             echo "Wheel version (${HAVE}) != tag (${WANT})"
             exit 1
