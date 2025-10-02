@@ -95,14 +95,14 @@ git commit -m "Update generated types"
 Mac/Linux/WSL (build, inspect)
 
 ```
-python3 -m build
+uv build
 unzip -l dist/*.whl
 ```
 
 Windows PowerShell (build, extract, clean up)
 
 ```
-py -m build
+uv build
 
 $TMP = New-Item -ItemType Directory -Path ([System.IO.Path]::GetTempPath()) -Name ("wheel_" + [System.Guid]::NewGuid())
 Expand-Archive dist\*.whl -DestinationPath $TMP.FullName
@@ -115,7 +115,7 @@ Remove-Item -Recurse -Force $TMP
 ## Docs
 
 ```bash
-uv run mkdocs build
+uv run mkdocs build --strict
 uv run mkdocs serve
 # Visit http://127.0.0.1:8000/
 ```
