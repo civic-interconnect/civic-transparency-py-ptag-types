@@ -27,8 +27,6 @@ permissions:
 env:
   # If a manual tag is provided, use that tag ref; otherwise use the event ref.
   REF: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '' && format('refs/tags/{0}', github.event.inputs.tag) || github.ref }}
-  # Convenience: plain version if REF is a tag like refs/tags/v0.1.4
-  PLAIN_VERSION: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '' && replace(github.event.inputs.tag, 'v', '') || replace(github.ref_name, 'v', '') }}
 
 jobs:
   # First job: Run the full CI suite
@@ -89,10 +87,19 @@ jobs:
       - name: Assemble. Install dev deps
         run: uv sync --extra dev --extra docs
 
-      - name: Versioning. Extract plain version from tag (no leading `v`)
+      - name: Versioning. Extract plain version from tag (no leading v)
         id: ver
         shell: bash
-        run: echo "plain=${PLAIN_VERSION}" >> "$GITHUB_OUTPUT"
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.tag }}" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG="${GITHUB_REF_NAME}"
+          fi
+          # Strip a single leading 'v' if present
+          PLAIN="${TAG#v}"
+          echo "plain=${PLAIN}" >> "$GITHUB_OUTPUT"
+          echo "Resolved version: ${PLAIN}"
 
       - name: Versioning. Print build version for logs
         run: echo "Building version ${{ steps.ver.outputs.plain }}"
@@ -120,7 +127,7 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
-          WANT="${PLAIN_VERSION}"
+          WANT="${{ steps.ver.outputs.plain }}"
           WHEEL="$(ls dist/*.whl | head -n1)"
           echo "Wheel: ${WHEEL}"
           HAVE="$(python -c "import glob,re; w=sorted(glob.glob('dist/*.whl'))[0]; m=re.search(r'civic[_-]transparency[_-]types-([0-9][^-]*)-py', w); print(m.group(1) if m else '')")"
