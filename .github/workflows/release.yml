@@ -17,7 +17,7 @@ on:
 
 # Avoid auto-canceling and keep runs per-ref grouped
 concurrency:
-  group: release-${{ inputs.tag != '' && format('refs/tags/{0}', inputs.tag) || github.ref }}
+  group: release-${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '' && format('refs/tags/{0}', github.event.inputs.tag) || github.ref }}
   cancel-in-progress: false
 
 permissions:
@@ -26,9 +26,9 @@ permissions:
 
 env:
   # If a manual tag is provided, use that tag ref; otherwise use the event ref.
-  REF: ${{ inputs.tag != '' && format('refs/tags/{0}', inputs.tag) || github.ref }}
+  REF: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '' && format('refs/tags/{0}', github.event.inputs.tag) || github.ref }}
   # Convenience: plain version if REF is a tag like refs/tags/v0.1.4
-  PLAIN_VERSION: ${{ inputs.tag != '' && replace(inputs.tag, 'v', '') || replace(github.ref_name, 'v', '') }}
+  PLAIN_VERSION: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '' && replace(github.event.inputs.tag, 'v', '') || replace(github.ref_name, 'v', '') }}
 
 jobs:
   # First job: Run the full CI suite
@@ -136,8 +136,8 @@ jobs:
       - name: Deploy. Create GitHub Release, upload artifacts and set as latest
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ inputs.tag != '' && inputs.tag || github.ref_name }}
-          name: ${{ inputs.tag != '' && inputs.tag || github.ref_name }}
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '' && github.event.inputs.tag || github.ref_name }}
+          name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '' && github.event.inputs.tag || github.ref_name }}
           generate_release_notes: true
           files: |
             dist/*.whl
