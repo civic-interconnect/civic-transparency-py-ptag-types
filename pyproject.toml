@@ -24,7 +24,7 @@ description = "Typed Python models (Pydantic v2) for the Civic Transparency PTag
 dynamic = ["version"]
 keywords = ["civic", "transparency", "provenance", "ptag", "types"]
 license = "MIT"
-name = "civic-transparency-py-ptag-types"
+name = "civic-transparency-ptag-types" # package name, not repo name
 readme = "README.md"
 requires-python = ">=3.12"
 

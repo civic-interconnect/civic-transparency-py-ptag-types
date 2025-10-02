@@ -185,7 +185,7 @@ wheels = [
 ]
 
 [[package]]
-name = "civic-transparency-py-ptag-types"
+name = "civic-transparency-ptag-types"
 source = { editable = "." }
 dependencies = [
     { name = "pydantic" },
