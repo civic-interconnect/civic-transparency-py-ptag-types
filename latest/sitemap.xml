@@ -1,39 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
     <url>
-        <loc>https://civic-interconnect.github.io/civic-transparency-types/latest/</loc>
-        <lastmod>2025-08-20</lastmod>
+        <loc>https://civic-interconnect.github.io/civic-transparency-py-ptag-types/latest/</loc>
+        <lastmod>2025-10-02</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://civic-interconnect.github.io/civic-transparency-types/latest/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://civic-interconnect.github.io/civic-transparency-py-ptag-types/latest/"/>
     </url>
     <url>
-        <loc>https://civic-interconnect.github.io/civic-transparency-types/latest/api/</loc>
-        <lastmod>2025-08-20</lastmod>
+        <loc>https://civic-interconnect.github.io/civic-transparency-py-ptag-types/latest/performance/</loc>
+        <lastmod>2025-10-02</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://civic-interconnect.github.io/civic-transparency-types/latest/api/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://civic-interconnect.github.io/civic-transparency-py-ptag-types/latest/performance/"/>
     </url>
     <url>
-        <loc>https://civic-interconnect.github.io/civic-transparency-types/latest/performance/</loc>
-        <lastmod>2025-08-20</lastmod>
+        <loc>https://civic-interconnect.github.io/civic-transparency-py-ptag-types/latest/usage/</loc>
+        <lastmod>2025-10-02</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://civic-interconnect.github.io/civic-transparency-types/latest/performance/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://civic-interconnect.github.io/civic-transparency-py-ptag-types/latest/usage/"/>
     </url>
     <url>
-        <loc>https://civic-interconnect.github.io/civic-transparency-types/latest/usage/</loc>
-        <lastmod>2025-08-20</lastmod>
+        <loc>https://civic-interconnect.github.io/civic-transparency-py-ptag-types/latest/api/</loc>
+        <lastmod>2025-10-02</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://civic-interconnect.github.io/civic-transparency-types/latest/usage/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://civic-interconnect.github.io/civic-transparency-py-ptag-types/latest/api/"/>
     </url>
     <url>
-        <loc>https://civic-interconnect.github.io/civic-transparency-types/latest/reference/provenance_tag/</loc>
-        <lastmod>2025-08-20</lastmod>
+        <loc>https://civic-interconnect.github.io/civic-transparency-py-ptag-types/latest/api/ptag/</loc>
+        <lastmod>2025-10-02</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://civic-interconnect.github.io/civic-transparency-types/latest/reference/provenance_tag/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://civic-interconnect.github.io/civic-transparency-py-ptag-types/latest/api/ptag/"/>
     </url>
     <url>
-        <loc>https://civic-interconnect.github.io/civic-transparency-types/latest/reference/series/</loc>
-        <lastmod>2025-08-20</lastmod>
+        <loc>https://civic-interconnect.github.io/civic-transparency-py-ptag-types/latest/api/ptag_series/</loc>
+        <lastmod>2025-10-02</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://civic-interconnect.github.io/civic-transparency-types/latest/reference/series/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://civic-interconnect.github.io/civic-transparency-py-ptag-types/latest/api/ptag_series/"/>
     </url>
 </urlset>
