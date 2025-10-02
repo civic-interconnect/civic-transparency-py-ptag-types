@@ -22,15 +22,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install uv
+      - name: Install uv + Python 3.12
         uses: astral-sh/setup-uv@v4
         with:
           enable-cache: true
-
-      - name: Setup Python 3.12
-        run: |
-          uv python install 3.12
-          uv venv .venv --python 3.12
+          python-version: "3.12"
 
       - name: Assemble. Install all dev dependencies with uv
         run: uv sync --extra dev --extra docs
