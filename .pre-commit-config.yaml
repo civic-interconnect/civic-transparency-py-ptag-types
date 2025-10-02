@@ -1,0 +1,68 @@
+# .pre-commit-config.yaml
+exclude: |
+  (?x)^(
+    \.venv/|
+    dist/|
+    build/|
+    htmlcov/|
+    site/|
+    .*\.egg-info/
+  )
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.13.0
+    hooks:
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-yaml
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+
+  - repo: https://github.com/abravalheri/validate-pyproject
+    rev: v0.24.1
+    hooks:
+      - id: validate-pyproject
+
+  - repo: https://github.com/fpgmaas/deptry
+    rev: 0.23.1
+    hooks:
+      - id: deptry
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.8.6
+    hooks:
+      - id: bandit
+        args: ["-c", "pyproject.toml"]
+        additional_dependencies: ["bandit"]
+
+  # Ensure generated types are up-to-date before linters/type-checkers
+  - repo: local
+    hooks:
+      - id: generate-ptag-types
+        name: generate-ptag-types
+        entry: uv run python .github/scripts/generate_types.py
+        language: system
+        pass_filenames: false
+        always_run: false
+        files: ^(spec/schemas/|\.github/scripts/)
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.13.0
+    hooks:
+      - id: ruff
+      - id: ruff-format
+        args: [--check]
+
+  # Pyright LAST so it sees freshly generated files
+  - repo: local
+    hooks:
+      - id: pyright
+        name: pyright
+        entry: uv run pyright
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]

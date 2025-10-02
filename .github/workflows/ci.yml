@@ -1,0 +1,221 @@
+# .github/workflows/ci.yml
+name: PTag Types CI (Build Types, Lint, Test, Coverage)
+# DESIGN PRINCIPLES:
+# - CI VALIDATES, never generates - all types are already committed
+# - Scope naming (Assemble/Baseline/Coverage/Deploy) reinforces CI/CD patterns
+# - Compatibility matrix tests multiple Python versions
+# - Fail fast design - catch issues before they reach release
+#
+# DEVELOPER WORKFLOW:
+# 1. uv sync --extra dev --extra docs --upgrade
+# 2. uv run ruff check . --fix
+# 3. uv run ruff format .
+# 4. uv run pre-commit run --all-files
+# 5. uv run -m pytest -q
+# 6. Push - CI validates everything works correctly
+#
+# CI PHASES:
+# - Assemble: Install dependencies, verify environment setup
+# - Baseline: Core validation (types exist, lint passes, tests pass)
+# - Coverage: Generate reports and upload artifacts
+# - Deploy: Build package and docs (sanity checks for release readiness)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+
+env:
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  PYTHONUNBUFFERED: "1"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compatibility-matrix:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.12", "3.13"]
+      fail-fast: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Setup Python ${{ matrix.python-version }}
+        run: |
+          uv python install ${{ matrix.python-version }}
+          uv venv .venv --python ${{ matrix.python-version }}
+
+      - name: Assemble. Install dependencies with uv sync
+        run: uv sync --extra dev --extra docs --upgrade
+
+      - name: Baseline. Ruff lint check
+        run: uv run ruff check .
+
+      - name: Baseline. Verify version compatibility
+        run: uv run python .github/scripts/check_version_compatibility.py
+
+      - name: Baseline. Verify types import and empty points
+        run: uv run python .github/scripts/verify_types.py
+
+  ci:
+    runs-on: ubuntu-latest
+    needs: compatibility-matrix
+    strategy:
+      matrix:
+        python-version: ["3.12", "3.13"]
+
+    steps:
+      - name: Checkout (full history with tags)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Keep setup-python (ok), but we also need uv since all steps use it.
+      - name: Setup Python and cache ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Assemble. Install all dev dependencies (non-editable)
+        run: |
+          uv sync --extra dev --extra docs --upgrade
+
+      - name: Baseline. Ensure generated types are up-to-date (no drift)
+        run: |
+          tmpdir="$(mktemp -d)"
+          uv run python .github/scripts/generate_types.py --out "$tmpdir"
+          echo "Comparing committed types to freshly generated types..."
+          diff -qr "$tmpdir" src/ci/transparency/ptag/types || {
+            echo
+            echo "ERROR: Generated types differ from committed files."
+            echo "Run locally:"
+            echo "  uv run python .github/scripts/generate_types.py"
+            echo "  git add src/ci/transparency/ptag/types"
+            echo '  git commit -m "Update generated types"'
+            exit 1
+          }
+
+      - name: Baseline. Ruff lint check
+        run: uv run ruff check .
+
+      - name: Baseline. Verify version compatibility
+        run: uv run python .github/scripts/check_version_compatibility.py
+
+      - name: Baseline. Verify committed types exist and are valid
+        run: |
+          if [ ! -f "src/ci/transparency/ptag/types/ptag_series.py" ] || [ ! -f "src/ci/transparency/ptag/types/ptag.py" ]; then
+            echo 'ERROR: Generated type files are missing!'
+            echo 'Run locally:'
+            echo '  python scripts/generate_types.py'
+            echo '  git add src/ci/transparency/ptag/types/'
+            echo '  git commit -m "Add generated types"'
+            exit 1
+          fi
+
+      - name: Baseline. Verify types import and empty points
+        run: uv run python .github/scripts/verify_types.py
+
+      - name: Baseline. Run tests
+        run: uv run -m pytest -q
+
+      - name: Coverage. Generate summary
+        run: uv run python .github/scripts/coverage_summary.py
+
+      - name: Coverage. Build HTML
+        run: uv run -m coverage html
+
+      - name: Coverage. Combine and Upload Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports-${{ matrix.python-version }}
+          path: |
+            coverage.xml
+            htmlcov/
+          overwrite: true
+
+      - name: Deploy. Build package (sanity check)
+        run: uv build
+
+      - name: Deploy. Build docs (sanity check)
+        run: uv run mkdocs build --strict
+
+  # Performance monitoring (runs only on main branch)
+  performance:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs: ci
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Assemble. Install dependencies
+        run: uv sync --extra dev --extra docs --upgrade
+
+      - name: Baseline. Run performance benchmarks
+        run: uv run python .github/scripts/benchmark_performance.py
+
+      - name: Coverage. Upload performance results
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-benchmarks
+          path: |
+            performance_results.txt
+            performance_results.md
+
+      - name: Baseline. Check for performance regressions
+        run: |
+          uv run python - <<'PY'
+          import re, sys
+          content = open('performance_results.txt', 'r', encoding='utf-8').read()
+
+          def grab(label):
+              m = re.search(rf'{re.escape(label)}:\s+([0-9,]+)\s+records/sec', content)
+              return int(m.group(1).replace(',', '')) if m else None
+
+          ptag_rps = grab('PTag')
+          series_min_rps = grab('PTagSeries (minimal)')
+
+          if ptag_rps is not None:
+              if ptag_rps < 100_000:
+                  print(f'WARNING: PTag performance regression: {ptag_rps:,}/sec')
+              else:
+                  print(f'PASS: PTag performance: {ptag_rps:,}/sec')
+
+          if series_min_rps is not None:
+              if series_min_rps < 20_000:
+                  print(f'WARNING: PTagSeries (minimal) performance regression: {series_min_rps:,}/sec')
+              else:
+                  print(f'PASS: PTagSeries (minimal) performance: {series_min_rps:,}/sec')
+          PY

@@ -1,0 +1,75 @@
+site_name: Civic Transparency PTag Python Types
+site_description: Types for the Civic Transparency PTag project
+site_author: Civic Interconnect
+site_url: https://civic-interconnect.github.io/civic-transparency-py-ptag-types/
+repo_url: https://github.com/civic-interconnect/civic-transparency-py-ptag-types
+edit_uri: edit/main/docs/en/
+
+theme:
+  name: material
+  language: en
+  favicon: img/favicon.png
+  palette:
+    scheme: default
+    primary: indigo
+    accent: indigo
+  features:
+    - content.footer
+    - navigation.tabs
+    - navigation.top
+    - navigation.expand
+    - navigation.sections
+    - navigation.indexes
+    - navigation.tracking
+  copyright: Copyright &copy; 2025 Civic Interconnect
+
+
+docs_dir: docs/en
+
+plugins:
+  - search
+  - include-markdown
+  - i18n:
+      docs_structure: folder
+      languages:
+        - locale: en
+          default: true
+          name: English
+
+  - git-revision-date-localized:
+      type: iso_date
+      fallback_to_build_date: true
+      enable_creation_date: false
+
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: google
+            show_source: false
+            members: true
+            show_root_heading: true
+            show_signature: true
+            group_by_category: true
+            filters: ["!^_"]  # hide private members
+            find_stubs_package: true
+
+markdown_extensions:
+- admonition
+- codehilite
+- pymdownx.snippets
+- pymdownx.tabbed
+- toc
+
+nav:
+  - Home: index.md
+  - Usage: usage.md
+  - Performance: performance.md
+  - API:
+      - Index: api/index.md
+      - PTag: api/ptag.md
+      - PTagSeries: api/ptag_series.md
+  - Spec:
+      - Civic Transparency Spec (website): https://civic-interconnect.github.io/civic-transparency-ptag-spec/
+      - Civic Transparency Spec (source): https://github.com/civic-interconnect/civic-transparency-ptag-spec

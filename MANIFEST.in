@@ -1,0 +1,17 @@
+# MANIFEST.in — keep the sdist lean
+
+# Core project files
+include LICENSE
+include README.md
+include pyproject.toml
+
+graft src/ci/transparency/py/ptag/types
+
+# Exclude non-distribution directories
+prune .github
+prune docs
+prune site
+prune tests
+
+# Exclude misc config/artifacts
+exclude .editorconfig .gitattributes .gitignore .pre-commit-config.yaml coverage.xml mkdocs.yml

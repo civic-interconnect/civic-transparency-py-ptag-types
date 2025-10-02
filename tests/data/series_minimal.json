@@ -1,0 +1,21 @@
+{
+  "topic": "#TestTopic",
+  "generated_at": "2025-08-19T12:00:00Z",
+  "interval": "minute",
+  "points": [
+    {
+      "interval_start": "2025-08-19T12:00:00Z",
+      "volume": 100,
+      "reshare_ratio": 0.5,
+      "recycled_content_rate": 0.1,
+      "acct_age_mix": { "0-7d": 0.2, "8-30d": 0.3, "1-6m": 0.5 },
+      "automation_mix": { "manual": 0.9, "scheduled": 0.1 },
+      "client_mix": { "web": 0.6, "mobile": 0.4 },
+      "coordination_signals": {
+        "burst_score": 0.3,
+        "synchrony_index": 0.2,
+        "duplication_clusters": 5
+      }
+    }
+  ]
+}

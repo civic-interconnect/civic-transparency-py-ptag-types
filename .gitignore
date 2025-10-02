@@ -1,0 +1,73 @@
+# This .gitignore file lists content that does NOT need to be tracked in the project history
+
+# ----------------------------------------
+# macOS system files (always ignore)
+# ----------------------------------------
+.DS_Store
+
+# ----------------------------------------
+# IDE (always ignore)
+# ----------------------------------------
+.vscode/
+.idea/
+
+# ----------------------------------------
+# Environment variables and secrets (always ignore)
+# ----------------------------------------
+.env
+.env.*
+
+# ----------------------------------------
+# Python (ignore for all Python projects)
+# ----------------------------------------
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# ----------------------------------------
+# Testing & coverage
+# ----------------------------------------
+.coveragerc # Put info in pyproject.toml
+coveragerc # Put info in pyproject.toml
+pytest.ini # Put info in pyproject.toml
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+.tox/
+.nox/
+
+# ----------------------------------------
+# Generated artifacts (ignore build and distribution artifacts)
+# ----------------------------------------
+artifacts/
+
+# ----------------------------------------
+# Packaging tools
+# ----------------------------------------
+*.manifest
+*.spec
+
+# ----------------------------------------
+# Local tools & cache
+# ----------------------------------------
+.mypy_cache/
+ruff_cache/
+.cache/
+*.backup
+
+# ----------------------------------------
+# Generated _version by setuptools_scm (always ignore)
+# ----------------------------------------
+_version.py # not used
+
+# ----------------------------------------
+# Generated website files (always ignore)
+# ----------------------------------------
+site/

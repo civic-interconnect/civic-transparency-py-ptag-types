@@ -1,0 +1,22 @@
+PERFORMANCE SUMMARY
+==================================================
+
+  VALIDATION PERFORMANCE
+PTag:      132,664 records/sec
+PTagSeries (minimal):    25,457 records/sec
+PTagSeries (complex):       243 records/sec
+
+  SERIALIZATION PERFORMANCE (Pydantic JSON)
+PTag:      285,644 records/sec
+PTagSeries (minimal):   102,703 records/sec
+PTagSeries (complex):     1,598 records/sec
+
+  SERIALIZATION PERFORMANCE (orjson)
+PTag:      503,323 records/sec
+PTagSeries (minimal):   186,822 records/sec
+PTagSeries (complex):     2,670 records/sec
+
+  MEMORY USAGE
+PTag:        1,790 bytes
+PTagSeries (minimal):     8,340 bytes
+PTagSeries (complex):   782,152 bytes

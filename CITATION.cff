@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+title: Civic Transparency Ptag Types for Python
+message: If you use this software, please cite it as below.
+type: software
+authors:
+  - name: Civic Interconnect
+repository-code: https://github.com/civic-interconnect/civic-transparency-py-ptag-types
+license: MIT
+keywords:
+  - civic
+  - transparency
+  - provenance
+  - ptag
+  - security
+  - vulnerability
+  - privacy
+  - data integrity

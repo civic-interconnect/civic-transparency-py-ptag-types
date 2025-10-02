@@ -1,0 +1,46 @@
+# .github/workflows/deploy-docs.yml
+name: Deploy PTag Python Type Docs (always latest main)
+# Designed to run on every push to the main branch.
+# It builds and deploys the latest version of the documentation to GitHub Pages.
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write # gh-pages in docs job
+      pages: write
+      id-token: write
+
+    steps:
+      - name: Checkout (full history with tags)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Setup Python 3.12
+        run: |
+          uv python install 3.12
+          uv venv .venv --python 3.12
+
+      - name: Assemble. Install all dev dependencies with uv
+        run: uv sync --extra dev --extra docs
+
+      - name: Deploy. Build docs
+        run: uv run mkdocs build --strict
+
+      - name: Deploy. Deploy docs with Mike and set latest
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          uv run mike deploy --push --update-aliases latest main
+          uv run mike set-default --push latest
