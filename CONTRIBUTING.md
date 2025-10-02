@@ -128,22 +128,34 @@ Ensure:
 
 ---
 
-## Release
+## Pre-Release Sanity Checklist
 
-1. Update `CHANGELOG.md` with notable changes (beginning and end).
-2. Update pyproject.toml with correct version in project dependencies "civic-transparency-ptag-spec>=x.y.z...",
-3. Ensure all CI checks pass.
-4. Build and verify package locally.
-5. Tag and push (setuptools_scm uses the tag).
+Before tagging a release, confirm:
+
+- [ ] `CHANGELOG.md` updated (top + bottom)
+- [ ] `pyproject.toml` dependency updated
+  *(e.g., `"civic-transparency-ptag-spec>=x.y.z"`)*
+- [ ] Local CI checks pass
+  (`ruff`, `pre-commit`, `pyright`, `pytest`, `mkdocs build --strict`)
+- [ ] Types regenerated + committed
+  (`uv run python .github/scripts/generate_types.py`)
+- [ ] Wheel builds cleanly
+  (`uv build` → inspect `dist/*.whl`)
+- [ ] Wheel version matches tag (`vx.y.z`)
+- [ ] GitHub Actions green on `main` before tagging
+
 
 **Pre-release script:**
 
 ```bash
+git pull origin main
 git add .
 uv run ruff check . --fix
 uv run ruff format .
 
 pre-commit run --all-files
+uv run python .github/scripts/generate_types.py
+git add src/ci/transparency/ptag/types/
 uv run pyright
 uv run pytest
 uv run mkdocs build --strict
