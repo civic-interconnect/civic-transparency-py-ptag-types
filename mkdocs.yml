@@ -23,7 +23,6 @@ theme:
     - navigation.tracking
   copyright: Copyright &copy; 2025 Civic Interconnect
 
-
 docs_dir: docs/en
 
 plugins:
@@ -52,15 +51,15 @@ plugins:
             show_root_heading: true
             show_signature: true
             group_by_category: true
-            filters: ["!^_"]  # hide private members
+            filters: ["!^_"] # hide private members
             find_stubs_package: true
 
 markdown_extensions:
-- admonition
-- codehilite
-- pymdownx.snippets
-- pymdownx.tabbed
-- toc
+  - admonition
+  - codehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed
+  - toc
 
 nav:
   - Home: index.md
